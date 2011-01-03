@@ -4,11 +4,13 @@
 # Script xml_entity.pl converts numeric character reference or character entity reference into 
 # UTF-8 characters (http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references).
 # It also give a warning if data contains special character "|" 
-# (http://www.mail-archive.com/moses-support@mit.edu/msg00860.html).
+# (http://www.mail-archive.com/moses-support@mit.edu/msg00860.html). The script is a part of M4Loc 
+# effort http://code.google.com/p/m4loc/
 #
 #
 #
-# Copyright 2010 Tomas Hudik, Moravia WorldWide, thudik@moraviaworldwide.com
+# © 2010 Moravia a.s. (DBA Moravia WorldWide), 
+# Moral Rights asserted by Tomáš Hudík thudik@moraviaworldwide.com
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by

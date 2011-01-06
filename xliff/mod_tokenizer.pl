@@ -11,7 +11,7 @@
 #
 #
 #
-# © 2010 Moravia a.s. (DBA Moravia WorldWide),
+# © 2011 Moravia a.s. (DBA Moravia WorldWide),
 # Moral Rights asserted by Tomáš Hudík thudik@moraviaworldwide.com
 #
 # This program is free software: you can redistribute it and/or modify
@@ -85,8 +85,7 @@ if ($HELP) {
 }
 
 #create tmp file for storing encapsulated inLineText data (output of tikal -xm)
-my $tmpout =
-  File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => "1" );
+my $tmpout = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => "1" );
 
 #for some OS it can be good to uncomment these lines. New versions of linux are OK without them
 #binmode( $tmpout, ":utf8" );
@@ -94,7 +93,9 @@ my $tmpout =
 #binmode( STDOUT,  ":utf8" );
 
 #add XML init string to document to be processible by xml parser (XML::LibXML Reader)
-print( $tmpout "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<xliff_inLines xml:space=\"preserve\">" );
+print( $tmpout
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<xliff_inLines xml:space=\"preserve\">"
+);
 
 #read and store STDIN into the temporary file
 my $line;
@@ -127,7 +128,7 @@ while ( $reader->read ) {
 #tokenize remaining str_tok if any
 if ( length($str_tok) > 0 ) {
     $str_out .= " " . tokenize($str_tok);
-    $str_tok="";
+    $str_tok = "";
 }
 
 #write down output
@@ -150,7 +151,7 @@ sub processNode {
     #if a node is a string
     if ( $reader->name eq "#text" ) {
 
-	#if this text node is in some placeholder - assign it to str_tok (will be tokenized)
+      #if this text node is in some placeholder - assign it to str_tok (will be tokenized)
         if ( $#in_ph == -1 ) {
             $str_tok .= $reader->value;
         }
@@ -169,8 +170,7 @@ sub processNode {
         if ( $reader->moveToFirstAttribute ) {
             do {
                 {
-                    $str_tag .=
-                      " " . $reader->name() . "=\"" . $reader->value . "\"";
+                    $str_tag .= " " . $reader->name() . "=\"" . $reader->value . "\"";
                 }
             } while ( $reader->moveToNextAttribute );
             $reader->moveToElement;
@@ -182,20 +182,20 @@ sub processNode {
             $str_tok = "";
         }
 
-	#if is empty node (e.g. <a/>) add closing bracket and return
+        #if is empty node (e.g. <a/>) add closing bracket and return
         #there is no string for tokenization (str_tok should be empty)
         if ( $reader->isEmptyElement ) {
             $str_out .= $str_tag . "/>";
-	    $str_tag = "";	    
+            $str_tag = "";
             return;
         }
 
-	#if the opening tag is placeholder add its name to queue
-	if ( $reader->name ~~ @placeholders ) {
-	    push( @in_ph, $reader->name );
+        #if the opening tag is placeholder add its name to queue
+        if ( $reader->name ~~ @placeholders ) {
+            push( @in_ph, $reader->name );
         }
 
-	#add starting tag
+        #add starting tag
         $str_out .= $str_tag . ">";
         $str_tag = "";
     }
@@ -234,15 +234,17 @@ sub tokenize {
     for ( my $i = 0 ; $i <= $#arr ; $i++ ) {
         switch ( ( $i + 1 ) % 3 ) {
             case 0 {
-            } # do nothing; or create a better regexp and remove this useless case ;)
+            }    # do nothing; or create a better regexp and remove this useless case ;)
             case 1 {
-		#substitute " for \",otherwise echo command would end up with fail 
-		#improve regexp to add \ whenever even number of \ is before " ???
-		$arr[$i] =~ s/"/\\"/g;
-                $tokenized .= `echo -n "$arr[$i]" | ./tokenizer.perl -l $lang 2> /dev/null`;
+
+                #substitute " for \",otherwise echo command would end up with fail
+                #improve regexp to add \ whenever even number of \ is before " ???
+                $arr[$i] =~ s/"/\\"/g;
+                $tokenized .=
+                  `echo -n "$arr[$i]" | ./tokenizer.perl -l $lang 2> /dev/null`;
                 chomp($tokenized);
 
-    		#if $arr[$i] ends with a newline (\n), add one also at the end of $tokenized
+              #if $arr[$i] ends with a newline (\n), add one also at the end of $tokenized
                 if ( $arr[$i] =~ /\n$/ ) {
                     $tokenized .= "\n";
                 }
@@ -288,7 +290,7 @@ tokenization rules written in nonbreaking_prefixes sub-directory.
 
 =head3 PREREQUISITES
 
-XML::Entities
+XML::LibXML::Reader
 
 =head3 Author
 
@@ -297,7 +299,10 @@ Tomáš Hudík, thudik@moraviaworldwide.com
 
 =head3 TODO:
 
-1. follow examples from the technical specification - 1 example (FE<lt>.../E<gt>ile) is still missing
+1. follow examples from the Technical Specification - 1. example (C<FE<lt>x equiv-text=''/E<gt>ile>) 
+is still missing. It is tricky since C<equive-text> is optional and can point to a hotkey (a word 
+is divided by the tag) but to line, or page break, as well (the tag between 2 different words without
+any whitespace). Probably it will be solved in XLIFF 2.0
 
 2. add - if str_out is too long - print it to file
 

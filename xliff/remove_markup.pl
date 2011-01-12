@@ -22,17 +22,22 @@
 #
 
 use strict;
+use Getopt::Std;
 
 binmode(STDIN,":utf8");
 binmode(STDOUT,":utf8");
 
+our $opt_a;
+getopts("a");
 if(@ARGV != 0) {
-    die "Usage: $0 < <text file with markup> > <plain text file>\n";
+    die "Usage: $0 [-a] < <text file with markup> > <plain text file>\n";
 }
+
+my $regex = $opt_a?qr/<.*?>/:qr/<\/?\s*[xg]\s.*?>/;
 
 while(<>) {
     chomp;
-    s/<.*?>//g;
+    s/$regex//g;
     s/\s\s+/ /g;
     print;
     print "\n";
@@ -41,15 +46,34 @@ while(<>) {
 
 __END__
 
-=head1 remove_markup.pl: Removal of bracketed markup from text file
+=head1 NAME
 
-=head2 USAGE
+remove_markup.pl: Removal of bracketed markup from text file
 
-    perl remove_markup.pl < <text file with markup> > <plain text file>
+=head1 USAGE
+
+    perl remove_markup.pl [-a] < <text file with markup> > <plain text file>
 
 This tool removes markup from a sentence-split, optionally tokenized text file 
-to allow the translation of the contained text with Moses. Input is 
-expected to be UTF-8 encoded (without a leading byte-order mark U+FEFF) and output will be UTF-8 encoded as well. Any text between C<< < >> and C<< > >> brackets gets removed. Any unmatched brackets do not get removed as these can be valid text that needs to be translated (e.g. "The thermometer shows a temperature < 32 E<deg>F .".
+to allow the translation of the contained text with Moses. By default it only
+removes XLIFF C<< <x> >> and C<< <g> >> tags, while with the -a option the script
+removes all angle-bracketed tags.
+
+Input is expected to be UTF-8 encoded (without a leading byte-order mark U+FEFF) and 
+output will be UTF-8 encoded as well. Any unmatched brackets do not get removed as these can 
+be valid text that needs to be translated (e.g. "The thermometer shows a temperature < 32 E<deg>F .").
 
 As part of the markup removal the script also collapses consecutive whitespace 
-into one space character.
+into one space character. It also terminates the output lines with the platform-specific line 
+termination character(s).
+
+=head1 OPTIONS
+
+=over
+
+=item -a
+
+If this option is specified the tool with remove all markup between opening C<< < >>
+and closing C<< > >> brackets.
+
+=back

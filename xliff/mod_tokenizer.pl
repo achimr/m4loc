@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
 
 #
-# Script mod_tokenizer.pl tokenizes data from InlineText; this data format is
-# tikal -xm output (Okapi Framework). mod_tokenizer is a part of M4Loc effort
+# Script mod_tokenizer.pl tokenizes text in InlineText format; this data format is
+# tikal -xm output (Okapi Framework) output. mod_tokenizer is a part of M4Loc effort
 # http://code.google.com/p/m4loc/. The output is tokenized/segmented text with
-# not tokenized XML/XLIFF tags and url addresses - high level technical specification
+# not tokenized InlineText tags and url addresses - high level technical specification
 # can be found at: http://code.google.com/p/m4loc/ ,click on "Specifications" and
 # select "ModTokenizer - Technical Specification". Moses' tokenizer.perl and
 # nonbreaking_prefixes direcory are required by the script.
@@ -38,9 +38,8 @@ use Switch;
 
 #GLOBAL VARIABLES
 
-#array of placeholders. These XLIFF tags are treated differently than other XML tags. Textual
-#strings inside placeholders are not tokenized instead of other XML tags
-my @placeholders = qw/g sub mrk/;
+#array of allowed InlineText tags. Only these are allowed, any other will cause a warning
+my @InlineTexttags = qw/g x bx ex/;
 
 #language can be specified by user, otherwise is used en as default. It is used in
 #tokenizer.perl script (part of Moses SW package)
@@ -55,12 +54,12 @@ my $str_tag = "";
 #output string - it is a combination(merger) of $str_tok and $str_tag
 my $str_out = "";
 
+#for QA (testing) only; if it is needed to analyze tmp file (before tokenizer.perl) 
+#set up to 1, otherwise 0
+my $deletetmp = 1;
+
 #tmp string
 my $tmp;
-
-#queue (array) of placeholder. It holds info  in which placeholder(s) the reader is embedded at
-#some time. Can be zero, or more.
-my @in_ph;
 
 #print out help info if some incorrect options has been inserted
 my $HELP = 0;
@@ -76,16 +75,16 @@ while (@ARGV) {
 }
 
 if ($HELP) {
-    print "\nmod_tokenizer.pl converts inLineText into pure tokenized text.\n";
+    print "\nmod_tokenizer.pl converts InlineText into tokenized InlineText.\n";
     print "\nUSAGE: ./mod_tokenizer (-l [de|en|...]) < inFile > outFile\n";
     print "\t -l language for tokenization/segmentation (tokenizer.perl)\n";
-    print "\tinFile - text file, textual output of Okapi Tikal (parameter -2tbl)\n";
-    print "\toutFile - tokenized text file, possible input for Moses\n";
+    print "\tinFile - InlinText file, output of Okapi Tikal (parameter -xm)\n";
+    print "\toutFile - tokenized InlineText file, input for markup_remover\n";
     exit;
 }
 
 #create tmp file for storing encapsulated inLineText data (output of tikal -xm)
-my $tmpout = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => "1" );
+my $tmpout = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => $deletetmp );
 
 #for some OS it can be good to uncomment these lines. New versions of linux are OK without them
 #binmode( $tmpout, ":utf8" );
@@ -110,7 +109,7 @@ close($tmpout);
 #my $f;
 #open($f,$tmpout->filename);
 #while(my $ll=<$f>){
-#    print $ll;
+#   print $ll;
 #}
 #close($f);
 #print "\n----------------------------------------------------------------------\n";
@@ -148,25 +147,15 @@ sub processNode {
         return;
     }
 
-    #if a node is a string
+    #if a node is a string -- add content to str_tok
     if ( $reader->name eq "#text" ) {
-
-      #if this text node is in some placeholder - assign it to str_tok (will be tokenized)
-        if ( $#in_ph == -1 ) {
             $str_tok .= $reader->value;
-        }
-
-        #otherwise (if it belogs to a placeholder), add it to str_tag (won't be tokenized)
-        else {
-            $str_tag .= $reader->value;
-        }
     }
 
     #if node is a start of some element
     if ( $reader->nodeType == 1 ) {
         $str_tag .= "<" . $reader->name;
-
-        #read and add attributes if any
+        #read and add attributes, if any
         if ( $reader->moveToFirstAttribute ) {
             do {
                 {
@@ -176,7 +165,7 @@ sub processNode {
             $reader->moveToElement;
         }
 
-        #tokenize and put it to the output string
+        #if str_tok is not empty,tokenize and put it to the output string
         if ( length($str_tok) > 0 ) {
             $str_out .= " " . tokenize($str_tok) . " ";
             $str_tok = "";
@@ -190,9 +179,10 @@ sub processNode {
             return;
         }
 
-        #if the opening tag is placeholder add its name to queue
-        if ( $reader->name ~~ @placeholders ) {
-            push( @in_ph, $reader->name );
+        #check whether the tag is correct InlineText tag
+        if (!($reader->name ~~ @InlineTexttags)) {
+            print STDERR "Warning: input has not valid InlineText format!!\n".
+	    "Problematic tag: <".$reader->name.">\nContinue...\n";
         }
 
         #add starting tag
@@ -211,12 +201,6 @@ sub processNode {
             $str_tok = "";
         }
 
-        #if it was placeholder - add content and remove it from queue
-        if ( $reader->name ~~ @placeholders ) {
-            $str_out .= $str_tag;
-            $str_tag = "";
-            pop(@in_ph);
-        }
 
         #add closing element tag
         $str_out .= "</" . $reader->name . ">";
@@ -263,13 +247,12 @@ __END__
 
 =head2 Description 
 
-It tokenizes data from InlineText; this data format is tikal -xm output (Okapi Framework). 
+It tokenizes data in InlineText format; this data format is tikal -xm output (Okapi Framework). 
 mod_tokenizer.pl is a part of M4Loc effort L<http://code.google.com/p/m4loc/>. The output is 
-tokenized/segmented text with untokenized XML/XLIFF tags, url addresses  and placeholders are 
-treated in a special way. High level technical specification can be found at: 
-L<http://code.google.com/p/m4loc/wiki/TableOfContents?tm=6> , click on "Specifications" and 
-select "ModTokenizer - Technical Specification". For lower level specification, check the code,
-it is well-documented and sometimes written in self-documenting  style.
+tokenized/segmented InlineText with untokenized XML/XLIFF tags and url addresses. High level 
+technical specification can be found at: L<http://code.google.com/p/m4loc/wiki/TableOfContents?tm=6> , 
+click on "Specifications" and select "ModTokenizer - Technical Specification". For lower level 
+specification, check the code, it is well-documented and sometimes written in self-documenting  style.
 
 The script takes data from standard input, process it and the output is written to the standard 
 output. Input and output are UTF-8 encoded data. 
@@ -280,13 +263,13 @@ output. Input and output are UTF-8 encoded data.
 C<< perl mod_tokenizer.pl (-l [en|de|...]) < inFile > outFile >>
 
 
-where B<inFile> contains InLineText data (Okapi Framework, tikal -xm) and B<outFile> 
-is tokenized, UTF-8 encoded file ready to processed by Markup Remover (M4Loc). Workflow:
+where B<inFile> contains InlineText data (Okapi Framework, tikal -xm) and B<outFile> 
+is tokenized, UTF-8 encoded file ready to processed by Markup remover (M4Loc). Workflow:
 L<http://bit.ly/gOms1Y>
 
 The tokenization process is language specific. The option B<-l> specifies the language. The script has to be put in
-the same directory as Moses' tokenizer.perl is, since the script is using tokenizer.perl and languge specific
-tokenization rules written in nonbreaking_prefixes sub-directory.
+the same directory as Moses tokenizer.perl is, since the script is using tokenizer.perl and languge specific
+tokenization rules stored in nonbreaking_prefixes sub-directory.
 
 =head3 PREREQUISITES
 
@@ -299,15 +282,10 @@ Tomáš Hudík, thudik@moraviaworldwide.com
 
 =head3 TODO:
 
-1. follow examples from the Technical Specification - 1. example (C<FE<lt>x equiv-text=''/E<gt>ile>) 
-is still missing. It is tricky since C<equive-text> is optional and can point to a hotkey (a word 
-is divided by the tag) but to line, or page break, as well (the tag between 2 different words without
-any whitespace). Probably it will be solved in XLIFF 2.0
+1. add - if str_out is too long - print it to file
 
-2. add - if str_out is too long - print it to file
+2. speed up by copying tokenizer.perl inside mod_tokenizer.pl
 
-3. speed up by copying tokenizer.perl inside mod_tokenizer.pl
-
-4. function tokenize - improve regexp to add \ whenever even number of \ is before " . Would be usefull? 
+3. function tokenize - improve regexp to add \ whenever even number of \ is before " . Would be usefull? 
 Can I expect input like: hello \\"World\\" - would it be covered by tikal?
 

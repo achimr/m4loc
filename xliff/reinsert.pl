@@ -33,6 +33,8 @@ if(@ARGV != 1) {
     die "Usage: $0 <source InlineText file> < <target plain text file > > <target InlineText file>\n";
 }
 
+my $inline_tags = "(g|x|bx|ex|lb)";
+
 open(my $ifh,"<:utf8",$ARGV[0]);
 
 # Read line from InlineText file
@@ -41,6 +43,7 @@ while(<$ifh>) {
     if(my $traced_target = <STDIN>) {
 	print reinsert_elements($traced_target,@elements);
 	print "\n";
+	#print $traced_target;
     }
     else {
 	die "Target file has fewer lines than source file";
@@ -54,20 +57,22 @@ sub extract_inline {
     my @elements;
     my $i = 0;
 
-    while($inline =~ /\G(.*?)<(\/?)(g|x|bx|ex)(\s.*?)?>/g) {
+    while($inline =~ /\G(.*?)<(\/?)$inline_tags(\s.*?)?>/g) {
 	my @tokens_before = split ' ',$1;
 	$i += @tokens_before;
+	my $tag_text = defined $4 ? $3.$4 : $3;
 	# opening or isolated tags
-	# issue?: this doesn't capture id's or handle overlapping tags
+	# TBD: this doesn't capture id's or handle overlapping tags
 	if($2 ne '/') {
-	    push @elements, {'el'=>$3,'s'=>$i,'txt'=>"<$3$4>"};
+	    push @elements, {'el'=>$3,'s'=>$i,'txt'=>"<$tag_text>"};
 	}
-	# closing </g> tag
-	elsif($2 eq '/' && $3 eq 'g') {
-	    # find the last opening <g> tag in the list
-	    foreach my $rev_element (reverse @elements) {
-		if($rev_element->{'el'} eq 'g') {
-		    $rev_element->{'e'} = $i;
+	# closing tags
+	else {
+	    # find the last corresponding opening tag in the list
+	    for (my $j = $#elements; $j >= 0; $j--) {
+		if($elements[$j]->{'el'} eq $3) {
+		    push @elements, {'el'=>$3,'s'=>$i,'txt'=>"</$tag_text>",'ot'=>$j};
+		    $elements[$j]->{'ct'} = $#elements;
 		    last;
 		}
 	    }
@@ -79,49 +84,89 @@ sub extract_inline {
 sub reinsert_elements {
     my $traced_target = shift;
     my @elements = @_;
+    my %added;
 
     my $target = "";
     my $i;
     my %cur_open;
-$DB::single = 2;
-my $foo = 1;
+    my %pending_close;
     while($traced_target =~ /\G(.*?)\s*\|(\d+)-(\d+)\|\s*/g) {
-	my %trace_open;
-	my %trace_close;
+	my %trace_elem = ();
+	# Determine which inline elements are opened or closed in the current trace
 	foreach $i (0..$#elements) {
 	    if($elements[$i]->{s} >= $2 && $elements[$i]->{s} <= $3) {
-		$trace_open{$i} = 1;
-	    }
-	    if($elements[$i]->{e} && $elements[$i]->{e} >= $2 && $elements[$i]->{e} <= $3) {
-		$trace_close{$i} = 1;
+		$trace_elem{$i} = $i;
 	    }
 	}
-	foreach $i (grep($trace_close{$_},keys %cur_open)) {
-	    $target .= "</g> ";
-	    delete $cur_open{$i};
+
+$DB::single = 2;
+my $foo = 1;
+	# Close any elements currently open that close in the current trace
+	# TBD: This can lead to overlaping paired tags because of two reasons
+	# 1. tags closed in original order, not in order in which they were opened
+	# 2. if multiple tags are open, any one of them could be closed
+	foreach $i (map($elements[$_]->{ct},reverse sort keys %cur_open)) {
+	    if(exists $trace_elem{$i}) {
+		$target .= $elements[$trace_elem{$i}]->{txt}." ";
+		delete $cur_open{$elements[$trace_elem{$i}]->{ot}};
+		$added{$elements[$trace_elem{$i}]->{ot}} = 1;
+		$added{$trace_elem{$i}} = 1;
+		delete $trace_elem{$i};
+	    }
 	}
-	foreach $i (reverse keys %trace_open) {
-	    $target .= $elements[$i]->{txt}." ";
-	    if($elements[$i]->{el} eq "g") {
-		# If inline element doesn't cover any text, close right away
-		if($elements[$i]->{s} == $elements[$i]->{e}) {
-		    $target .= "</g> ";
+
+	# Write opening tags before text and any closing tags if they don't cover any text
+	foreach $i (sort keys %trace_elem) {
+	    # If the tag is a closing tag for a currently open tag and the paired tag doesn't cover text
+	    if(exists $elements[$i]->{ot}) {
+		if(exists $cur_open{$elements[$i]->{ot}} && $elements[$i]->{s} == $elements[$elements[$i]->{ot}]->{s}) {
+		    $target .= $elements[$i]->{txt}." ";
+		    delete $cur_open{$elements[$trace_elem{$i}]->{ot}};
+		    $added{$elements[$trace_elem{$i}]->{ot}} = 1;
+		    $added{$trace_elem{$i}} = 1;
+		    delete $trace_elem{$i};
 		}
-		else {
-		    $cur_open{$i} = 1;
+	    }
+	    # Opening tag
+	    elsif(exists $elements[$i]->{ct}) {
+		$target .= $elements[$i]->{txt}." ";
+		$cur_open{$i} = $i;
+		# Was the currently opened element waiting to be closed?
+		# If yes, add it to the tags to close for the current trace
+		if(exists $pending_close{$elements[$i]->{ct}}) {
+		    $trace_elem{$elements[$i]->{ct}} = 1;
+		    delete $pending_close{$elements[$i]->{ct}};
 		}
+		delete $trace_elem{$i};
+	    }
+	    # Isolated tag
+	    else {
+		$target .= $elements[$i]->{txt}." ";
+		$added{$trace_elem{$i}} = 1;
+		delete $trace_elem{$i};
 	    }
 	}
+
+	# Append the target text
 	$target .= "$1 ";
-	# Check if any just opened inline elements need to be closed after the current trace
-	foreach $i (grep($trace_close{$_},keys %cur_open)) {
-	    $target .= "</g> ";
-	    delete $cur_open{$i};
+
+	# Only closing trace elements are left, add them if the tags are currently open
+	foreach $i (map($elements[$_]->{ct},reverse sort keys %cur_open)) {
+	    if(exists $trace_elem{$i}) {
+		$target .= $elements[$trace_elem{$i}]->{txt}." ";
+		delete $cur_open{$elements[$trace_elem{$i}]->{ot}};
+		$added{$elements[$trace_elem{$i}]->{ot}} = 1;
+		$added{$trace_elem{$i}} = 1;
+		delete $trace_elem{$i};
+	    }
 	}
+	# Store remaining closing tags in a hash
+	%pending_close = %trace_elem;
     }
-    foreach $i (keys %cur_open) {
-	# TBD: the only closing tag is hardcoded
-	$target .= "</g> ";
+
+    # Emit the elements that weren't added yet to the end of the target
+    foreach $i (grep(!$added{$_},0..$#elements)) {
+	$target .= $elements[$i]->{txt}." ";
     }
 
     return $target;

@@ -33,7 +33,7 @@ if(@ARGV != 0) {
     die "Usage: $0 [-a] < <text file with markup> > <plain text file>\n";
 }
 
-my $regex = $opt_a?qr/<.*?>/:qr/<\/?(g|x|bx|ex)(\s.*?)?>/;
+my $regex = $opt_a?qr/<.*?>/:qr/<\/?(g|x|bx|ex|lb)(\s.*?)?>/;
 
 while(<>) {
     chomp;

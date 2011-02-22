@@ -3,11 +3,11 @@
 #
 # Script mod_tokenizer.pl tokenizes text in InlineText format; this data format is
 # tikal -xm output (Okapi Framework) output. mod_tokenizer is a part of M4Loc effort
-# http://code.google.com/p/m4loc/. The output is tokenized/segmented text with
-# not tokenized InlineText tags and url addresses - high level technical specification
-# can be found at: http://code.google.com/p/m4loc/ ,click on "Specifications" and
-# select "ModTokenizer - Technical Specification". Moses' tokenizer.perl and
-# nonbreaking_prefixes direcory are required by the script.
+# http://code.google.com/p/m4loc/. The output is tokenized/segmented InlineText
+# that doesn't have tokenized InlineText tags and url addresses - high level 
+# technical specification can be found at: http://code.google.com/p/m4loc/ ,
+# click on "Specifications" and select "ModTokenizer - Technical Specification". 
+# Moses' tokenizer.perl and nonbreaking_prefixes direcory are required by the script.
 #
 #
 #
@@ -35,15 +35,13 @@ use strict;
 use File::Temp;
 use XML::LibXML::Reader;
 use Switch;
+use FindBin qw($Bin);
 
 #GLOBAL VARIABLES
 
-#array of allowed InlineText tags. Only these are allowed, any other will cause a warning
-my @InlineTexttags = qw/g x bx ex/;
-
 #language can be specified by user, otherwise is used en as default. It is used in
 #tokenizer.perl script (part of Moses SW package)
-my $lang = "en";
+my $language = "en";
 
 #string to be tokenized by tokenizer.perl
 my $str_tok = "";
@@ -54,9 +52,20 @@ my $str_tag = "";
 #output string - it is a combination(merger) of $str_tok and $str_tag
 my $str_out = "";
 
+#array of allowed InlineText tags. Only these are allowed, any other will cause a warning
+my @InlineTexttags = qw/g x bx ex/;
+
+
 #for QA (testing) only; if it is needed to analyze tmp file (before tokenizer.perl) 
 #set up to 1, otherwise 0
 my $deletetmp = 1;
+
+my $mydir = "$Bin/nonbreaking_prefixes";
+
+my %NONBREAKING_PREFIX = ();
+#my $QUIET = 0;
+#my $HELP = 0;
+#my $AGGRESSIVE = 0;
 
 #tmp string
 my $tmp;
@@ -70,14 +79,14 @@ my $HELP = 0;
 
 while (@ARGV) {
     $_ = shift;
-    /^-l$/ && ( $lang = shift, next );
+    /^-l$/ && ( $language = shift, next );
     /^(?!-l$)/ && ( $HELP = 1, next );
 }
 
 if ($HELP) {
     print "\nmod_tokenizer.pl converts InlineText into tokenized InlineText.\n";
     print "\nUSAGE: ./mod_tokenizer (-l [de|en|...]) < inFile > outFile\n";
-    print "\t -l language for tokenization/segmentation (tokenizer.perl)\n";
+    print "\t -l language for tokenization/segmentation\n";
     print "\tinFile - InlinText file, output of Okapi Tikal (parameter -xm)\n";
     print "\toutFile - tokenized InlineText file, input for markup_remover\n";
     exit;
@@ -86,15 +95,14 @@ if ($HELP) {
 #create tmp file for storing encapsulated inLineText data (output of tikal -xm)
 my $tmpout = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => $deletetmp );
 
-#for some OS it can be good to uncomment these lines. New versions of linux are OK without them
+#for some OS it can be good to uncomment these lines. 
+#New versions of linux are OK with only STDOUT specified as utf8
 #binmode( $tmpout, ":utf8" );
 #binmode( STDIN,   ":utf8" );
-#binmode( STDOUT,  ":utf8" );
+binmode( STDOUT,  ":utf8" );
 
 #add XML init string to document to be processible by xml parser (XML::LibXML Reader)
-print( $tmpout
-      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<xliff_inLines xml:space=\"preserve\">"
-);
+print( $tmpout "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<xliff_inLines xml:space=\"preserve\">");
 
 #read and store STDIN into the temporary file
 my $line;
@@ -104,6 +112,18 @@ while ( $line = <STDIN> ) {
 }
 print( $tmpout "</xliff_inLines>" );
 close($tmpout);
+
+
+#loading nonbreaking_prefixes
+load_prefixes($language,\%NONBREAKING_PREFIX);
+
+if (scalar(%NONBREAKING_PREFIX) eq 0){
+	print STDERR "Warning: No known abbreviations for language '$language'\n";
+}
+
+
+
+
 
 #for QA purposes only
 #my $f;
@@ -208,7 +228,7 @@ sub processNode {
 
 }
 
-#tokenize $str_tok and write it to $str_out
+#tokenize $str_tok and write it to $str_out (do not tokenize URL addresses)
 sub tokenize {
     my $str       = shift;
     my $tokenized = "";
@@ -220,24 +240,134 @@ sub tokenize {
             case 0 {
             }    # do nothing; or create a better regexp and remove this useless case ;)
             case 1 {
+		 #split input into lines, since tokenize_str can treat lines 
+		my @lines = split(/\n/,$arr[$i]);
+		foreach(@lines){
+	 	$tokenized .= tokenize_str($_);
+		}
+		if($arr[$i] !~ /\n$/){chomp($tokenized);}
 
-                #substitute " for \",otherwise echo command would end up with fail
-                #improve regexp to add \ whenever even number of \ is before " ???
-                $arr[$i] =~ s/"/\\"/g;
-                $tokenized .=
-                  `echo -n "$arr[$i]" | ./tokenizer.perl -l $lang 2> /dev/null`;
-                chomp($tokenized);
-
-              #if $arr[$i] ends with a newline (\n), add one also at the end of $tokenized
-                if ( $arr[$i] =~ /\n$/ ) {
-                    $tokenized .= "\n";
-                }
             }
             case 2 { $tokenized .= " $arr[$i] "; }
         }
     }
     return $tokenized;
 }
+
+
+#tokenize string (taken from Moses' tokenizer.perl - function tokenize)
+sub tokenize_str {
+	my($text) = @_;
+	chomp($text);
+	$text = " $text ";
+	
+	# seperate out all "other" special characters
+	$text =~ s/([^\p{IsAlnum}\s\.\'\`\,\-])/ $1 /g;
+	
+	#multi-dots stay together
+	$text =~ s/\.([\.]+)/ DOTMULTI$1/g;
+	while($text =~ /DOTMULTI\./) {
+		$text =~ s/DOTMULTI\.([^\.])/DOTDOTMULTI $1/g;
+		$text =~ s/DOTMULTI\./DOTDOTMULTI/g;
+	}
+
+	# seperate out "," except if within numbers (5,300)
+	$text =~ s/([^\p{IsN}])[,]([^\p{IsN}])/$1 , $2/g;
+	# separate , pre and post number
+	$text =~ s/([\p{IsN}])[,]([^\p{IsN}])/$1 , $2/g;
+	$text =~ s/([^\p{IsN}])[,]([\p{IsN}])/$1 , $2/g;
+	      
+	# turn `into '
+	$text =~ s/\`/\'/g;
+	
+	#turn '' into "
+	$text =~ s/\'\'/ \" /g;
+
+	if ($language eq "en") {
+		#split contractions right
+		$text =~ s/([^\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
+		$text =~ s/([^\p{IsAlpha}\p{IsN}])[']([\p{IsAlpha}])/$1 ' $2/g;
+		$text =~ s/([\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
+		$text =~ s/([\p{IsAlpha}])[']([\p{IsAlpha}])/$1 '$2/g;
+		#special case for "1990's"
+		$text =~ s/([\p{IsN}])[']([s])/$1 '$2/g;
+	} elsif (($language eq "fr") or ($language eq "it")) {
+		#split contractions left	
+		$text =~ s/([^\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
+		$text =~ s/([^\p{IsAlpha}])[']([\p{IsAlpha}])/$1 ' $2/g;
+		$text =~ s/([\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
+		$text =~ s/([\p{IsAlpha}])[']([\p{IsAlpha}])/$1' $2/g;
+	} else {
+		$text =~ s/\'/ \' /g;
+	}
+	
+	#word token method
+	my @words = split(/\s/,$text);
+	$text = "";
+	for (my $i=0;$i<(scalar(@words));$i++) {
+		my $word = $words[$i];
+		if ( $word =~ /^(\S+)\.$/) {
+			my $pre = $1;
+			if (($pre =~ /\./ && $pre =~ /\p{IsAlpha}/) || ($NONBREAKING_PREFIX{$pre} && $NONBREAKING_PREFIX{$pre}==1) || ($i<scalar(@words)-1 && ($words[$i+1] =~ /^[\p{IsLower}]/))) {
+				#no change
+			} elsif (($NONBREAKING_PREFIX{$pre} && $NONBREAKING_PREFIX{$pre}==2) && ($i<scalar(@words)-1 && ($words[$i+1] =~ /^[0-9]+/))) {
+				#no change
+			} else {
+				$word = $pre." .";
+			}
+		}
+		$text .= $word." ";
+	}		
+
+	# clean up extraneous spaces
+	$text =~ s/ +/ /g;
+	$text =~ s/^ //g;
+	$text =~ s/ $//g;
+
+	#restore multi-dots
+	while($text =~ /DOTDOTMULTI/) {
+		$text =~ s/DOTDOTMULTI/DOTMULTI./g;
+	}
+	$text =~ s/DOTMULTI/./g;
+	
+	#ensure final line break
+	$text .= "\n" unless $text =~ /\n$/;
+
+	return $text;
+}
+
+
+#taken from Moses' tokenizer.perl
+sub load_prefixes {
+	my ($language, $PREFIX_REF) = @_;
+	
+	my $prefixfile = "$mydir/nonbreaking_prefix.$language";
+	
+	#default back to English if we don't have a language-specific prefix file
+	if (!(-e $prefixfile)) {
+		$prefixfile = "$mydir/nonbreaking_prefix.en";
+		print STDERR "WARNING: No known abbreviations for language '$language', attempting fall-back to English version...\n";
+		die ("ERROR: No abbreviations files found in $mydir\n") unless (-e $prefixfile);
+	}
+	
+	if (-e "$prefixfile") {
+		open(PREFIX, "<:utf8", "$prefixfile");
+		while (<PREFIX>) {
+			my $item = $_;
+			chomp($item);
+			if (($item) && (substr($item,0,1) ne "#")) {
+				if ($item =~ /(.*)[\s]+(\#NUMERIC_ONLY\#)/) {
+					$PREFIX_REF->{$1} = 2;
+				} else {
+					$PREFIX_REF->{$item} = 1;
+				}
+			}
+		}
+		close(PREFIX);
+	}
+	
+}
+
 
 __END__
 
@@ -252,7 +382,8 @@ mod_tokenizer.pl is a part of M4Loc effort L<http://code.google.com/p/m4loc/>. T
 tokenized/segmented InlineText with untokenized XML/XLIFF tags and url addresses. High level 
 technical specification can be found at: L<http://code.google.com/p/m4loc/wiki/TableOfContents?tm=6> , 
 click on "Specifications" and select "ModTokenizer - Technical Specification". For lower level 
-specification, check the code, it is well-documented and sometimes written in self-documenting  style.
+specification, check the code, it is well-documented and sometimes written in
+self-documenting  style :).
 
 The script takes data from standard input, process it and the output is written to the standard 
 output. Input and output are UTF-8 encoded data. 
@@ -267,9 +398,10 @@ where B<inFile> contains InlineText data (Okapi Framework, tikal -xm) and B<outF
 is tokenized, UTF-8 encoded file ready to processed by Markup remover (M4Loc). Workflow:
 L<http://bit.ly/gOms1Y>
 
-The tokenization process is language specific. The option B<-l> specifies the language. The script has to be put in
-the same directory as Moses tokenizer.perl is, since the script is using tokenizer.perl and languge specific
-tokenization rules stored in nonbreaking_prefixes sub-directory.
+The tokenization process is language specific. The option B<-l> specifies the
+language. The script and the subdirectory nonbreaking_prefixes has to be put in
+the same directory, since the script is using languge specific tokenization rules stored 
+in nonbreaking_prefixes sub-directory.
 
 =head3 PREREQUISITES
 
@@ -283,9 +415,4 @@ Tomáš Hudík, thudik@moraviaworldwide.com
 =head3 TODO:
 
 1. add - if str_out is too long - print it to file
-
-2. speed up by copying tokenizer.perl inside mod_tokenizer.pl
-
-3. function tokenize - improve regexp to add \ whenever even number of \ is before " . Would be usefull? 
-Can I expect input like: hello \\"World\\" - would it be covered by tikal?
 

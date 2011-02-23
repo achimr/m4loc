@@ -108,7 +108,9 @@ print( $tmpout "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<xliff_inLines xml:s
 my $line;
 while ( $line = <STDIN> ) {
     chomp($line);
-    print( $tmpout $line . "\n" );
+    #extra whitespace and new line added (white space - solve URL\n case; URL \n
+    #is OK, however URL\n would cause leave one line out)
+    print( $tmpout $line . " \n" );
 }
 print( $tmpout "</xliff_inLines>" );
 close($tmpout);

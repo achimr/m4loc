@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+<!DOCTYPE
+ html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+ -->
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2"
+ xmlns:xmrk="urn:xmarker"
+ 
+ version="1.2">
+  <file datatype="plaintext" source-language="en" original="html">
+    <header>
+      <xmrk:nest>
+        <xmrk:html xmarker_idref="html-0" xml:lang="en">
+          <xmrk:head xmarker_idref="head-1">
+            <xmrk:meta xmarker_idref="meta-2" http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8"/>
+            <xmrk:title xmarker_idref="title-3"/>
+            <xmrk:style xmarker_idref="style-4" type="text/css" media="screen, projection"/>
+          </xmrk:head>
+          <xmrk:body xmarker_idref="body-5">
+            <xmrk:p xmarker_idref="p-6">
+              <xmrk:em xmarker_idref="em-7"/>
+              <xmrk:strong xmarker_idref="strong-8"/>
+            </xmrk:p>
+            <xmrk:ul xmarker_idref="ul-9">
+              <xmrk:li xmarker_idref="li-10">
+                <xmrk:a xmarker_idref="a-11" title="test link" href="#"/>
+              </xmrk:li>
+              <xmrk:li xmarker_idref="li-12">
+                <xmrk:span xmarker_idref="span-13" class="styled"/>
+              </xmrk:li>
+            </xmrk:ul>
+            <xmrk:p xmarker_idref="p-14"/>
+          </xmrk:body>
+        </xmrk:html>
+      </xmrk:nest>
+    </header>
+    <body>
+      <group id="id2297750axmarkhtml-0">
+        <group id="id2297759bxmarkhead-1">
+          <group id="id2297761exmarkmeta-2"/>
+          <trans-unit id="title-3">
+            <source>Test page for XLIFF</source>
+            <target>Test page for XLIFF</target>
+          </trans-unit>
+          <trans-unit id="style-4">
+            <source>
+	    .styled { font-size: .8em; color: red; font-face: sans-serif; }
+    </source>
+            <target>
+	    .styled { font-size: .8em; color: red; font-face: sans-serif; }
+    </target>
+          </trans-unit>
+        </group>
+        <group id="id2298359bxmarkbody-5">
+          <trans-unit id="p-6">
+            <source>A paragraph with some <g id="em-7">styles</g> just see how <g id="strong-8">nested elements</g> are handled.</source>
+            <target>A paragraph with some <g id="em-7">styles</g> just see how <g id="strong-8">nested elements</g> are handled.</target>
+          </trans-unit>
+          <group id="id2298372bxmarkul-9">
+            <trans-unit id="li-10">
+              <source>Item with a <g id="a-11">link</g> in it.</source>
+              <target>Item with a <g id="a-11">link</g> in it.</target>
+            </trans-unit>
+            <trans-unit id="li-12">
+              <source>Item with an <g id="span-13">CSS style</g>.</source>
+              <target>Item with an <g id="span-13">CSS style</g>.</target>
+            </trans-unit>
+          </group>
+          <trans-unit id="p-14">
+            <source>End of page</source>
+            <target>End of page</target>
+          </trans-unit>
+        </group>
+      </group>
+    </body>
+  </file>
+</xliff>

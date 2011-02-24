@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.1" xmlns:okp="okapi-framework:xliff-extensions" version="1.1">
+<file original="test" source-language="en" target-language="fr" datatype="xml" okp:settings="okf_xml@P%P3DDAFFAE" okp:encoding="utf-8">
+<header>
+<tool tool-id="P25CBF2C2" tool-name="Okapi.Utilities.Set01" tool-version="1.0.21.0" />
+</header>
+<body>
+<trans-unit id="1" translate="no">
+<source xml:lang="en">Text not to translate</source>
+</trans-unit>
+
+<trans-unit id="2" approved='yes'>
+<source xml:lang="en">Paragraph.</source>
+<target xml:lang="fr">Paragraphe (approved translation)</target>
+</trans-unit>
+
+<trans-unit id="3"> <!-- to translate -->
+<source xml:lang="en">Text to translate.</source>
+<target xml:lang="fr">Text to translate.</target>
+</trans-unit>
+
+<trans-unit id="4">
+<source xml:lang="en">Other text to translate.</source>
+<!-- put target here -->
+</trans-unit>
+
+<trans-unit id="5">
+<?abc def ?>
+<source xml:lang="en">Text to translate with PI</source>
+<?ghi jkl ?>
+</trans-unit>
+
+<trans-unit id="6" resname="ID1">
+<source xml:lang="en">Text to translate for ID1</source>
+<target xml:lang="fr"></target>
+</trans-unit>
+
+<trans-unit id="7">
+<source xml:lang="en">Text with <bpt id="1">&lt;code></bpt>code<ept id="1">&lt;/code></ept> and <bpt id="2">&lt;b></bpt>bold<ept id="2">&lt;/b></ept>.</source>
+<target xml:lang="fr"></target>
+</trans-unit>
+
+<trans-unit id="8">
+<source xml:lang="en">Text of the footnote</source>
+</trans-unit>
+
+<trans-unit id="9" resname="OtherID">
+<source xml:lang="en">Text with a footnote<ph id="1">&lt;fn>[$SF1$]&lt;/fn></ph> and more text</source>
+</trans-unit>
+
+<trans-unit id="10">
+<source xml:lang="en">Text with <bpt id="2">&lt;xd:rmk></bpt><ph id="1">XDoc info non-translatable</ph><ept id="2">&lt;/xd:rmk></ept> and more text.</source>
+<target xml:lang="fr"></target>
+</trans-unit>
+
+<trans-unit id="12">
+<source xml:lang="en">Text number four</source>
+<alt-trans>
+	<source xml:lang="en">The text number four.</source>
+	<target xml:lang="fr">Le texte numéro quatre.</target>
+</alt-trans>
+</trans-unit>
+
+<trans-unit id="13">
+<source xml:lang="en"><ph id='1'>CODE</ph></source>
+</trans-unit>
+
+<trans-unit id="14">
+<source xml:lang="en"/><!-- Nothing in this -->
+</trans-unit>
+
+</body>
+</file>
+</xliff>

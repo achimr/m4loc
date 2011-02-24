@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:okp="okapi-framework:xliff-extensions">
+<file original="[Content_Types].xml" source-language="en-us" target-language="fr-fr" datatype="x-undefined">
+<body>
+</body>
+</file>
+
+<file original="word/styles.xml" source-language="en-us" target-language="fr-fr" datatype="x-undefined">
+<body>
+</body>
+</file>
+
+<file original="word/document.xml" source-language="en-us" target-language="fr-fr" datatype="x-undefined">
+<body>
+<trans-unit id="tu1" xml:space="preserve">
+<source xml:lang="en-us">This is <bpt id="1">&lt;w:r>&lt;w:rPr>&lt;w:b/>&lt;/w:rPr>&lt;w:t></bpt>bold<ept id="1">&lt;/w:t>&lt;/w:r></ept> text.</source>
+<target xml:lang="fr-fr">This is <bpt id="1">&lt;w:r>&lt;w:rPr>&lt;w:b/>&lt;/w:rPr>&lt;w:t></bpt>bold<ept id="1">&lt;/w:t>&lt;/w:r></ept> text.</target>
+</trans-unit>
+<trans-unit id="tu2" xml:space="preserve">
+<source xml:lang="en-us">This is <bpt id="1">&lt;w:r>&lt;w:rPr>&lt;w:i/>&lt;/w:rPr>&lt;w:t></bpt>italic<ept id="1">&lt;/w:t>&lt;/w:r></ept> text.</source>
+<target xml:lang="fr-fr">This is <bpt id="1">&lt;w:r>&lt;w:rPr>&lt;w:i/>&lt;/w:rPr>&lt;w:t></bpt>italic<ept id="1">&lt;/w:t>&lt;/w:r></ept> text.</target>
+</trans-unit>
+<trans-unit id="tu3" xml:space="preserve">
+<source xml:lang="en-us">This is <bpt id="1">&lt;w:r>&lt;w:rPr>&lt;w:b/>&lt;/w:rPr>&lt;w:t></bpt>bold<ept id="1">&lt;/w:t>&lt;/w:r></ept> and then <bpt id="2">&lt;w:r>&lt;w:rPr>&lt;w:i/>&lt;/w:rPr>&lt;w:t></bpt>italic<ept id="2">&lt;/w:t>&lt;/w:r></ept> text.</source>
+<target xml:lang="fr-fr">This is <bpt id="1">&lt;w:r>&lt;w:rPr>&lt;w:b/>&lt;/w:rPr>&lt;w:t></bpt>bold<ept id="1">&lt;/w:t>&lt;/w:r></ept> and then <bpt id="2">&lt;w:r>&lt;w:rPr>&lt;w:i/>&lt;/w:rPr>&lt;w:t></bpt>italic<ept id="2">&lt;/w:t>&lt;/w:r></ept> text.</target>
+</trans-unit>
+<trans-unit id="tu4" xml:space="preserve">
+<source xml:lang="en-us">This is <bpt id="1">&lt;w:r>&lt;w:rPr>&lt;w:b/>&lt;w:i/>&lt;/w:rPr>&lt;w:t></bpt>bold and italic<ept id="1">&lt;/w:t>&lt;/w:r></ept> text.</source>
+<target xml:lang="fr-fr">This is <bpt id="1">&lt;w:r>&lt;w:rPr>&lt;w:b/>&lt;w:i/>&lt;/w:rPr>&lt;w:t></bpt>bold and italic<ept id="1">&lt;/w:t>&lt;/w:r></ept> text.</target>
+</trans-unit>
+<trans-unit id="tu5" xml:space="preserve">
+<source xml:lang="en-us">This is <bpt id="1">&lt;w:r>&lt;w:rPr>&lt;w:b/>&lt;w:i/>&lt;/w:rPr>&lt;w:t xml:space="preserve"></bpt>bold and italic and then <ept id="1">&lt;/w:t>&lt;/w:r></ept><bpt id="2">&lt;w:r>&lt;w:rPr>&lt;w:i/>&lt;/w:rPr>&lt;w:t></bpt>only italic<ept id="2">&lt;/w:t>&lt;/w:r></ept> text.</source>
+<target xml:lang="fr-fr">This is <bpt id="1">&lt;w:r>&lt;w:rPr>&lt;w:b/>&lt;w:i/>&lt;/w:rPr>&lt;w:t xml:space="preserve"></bpt>bold and italic and then <ept id="1">&lt;/w:t>&lt;/w:r></ept><bpt id="2">&lt;w:r>&lt;w:rPr>&lt;w:i/>&lt;/w:rPr>&lt;w:t></bpt>only italic<ept id="2">&lt;/w:t>&lt;/w:r></ept> text.</target>
+</trans-unit>
+</body>
+</file>
+
+<file original="word/settings.xml" source-language="en-us" target-language="fr-fr" datatype="x-undefined">
+<body>
+</body>
+</file>
+
+<file original="docProps/core.xml" source-language="en-us" target-language="fr-fr" datatype="x-undefined">
+<body>
+<trans-unit id="tu1" xml:space="preserve">
+<source xml:lang="en-us"></source>
+<target xml:lang="fr-fr"></target>
+</trans-unit>
+<trans-unit id="tu2" xml:space="preserve">
+<source xml:lang="en-us"></source>
+<target xml:lang="fr-fr"></target>
+</trans-unit>
+<trans-unit id="tu3" xml:space="preserve">
+<source xml:lang="en-us">Achim Ruopp</source>
+<target xml:lang="fr-fr">Achim Ruopp</target>
+</trans-unit>
+<trans-unit id="tu4" xml:space="preserve">
+<source xml:lang="en-us"></source>
+<target xml:lang="fr-fr"></target>
+</trans-unit>
+<trans-unit id="tu5" xml:space="preserve">
+<source xml:lang="en-us"></source>
+<target xml:lang="fr-fr"></target>
+</trans-unit>
+</body>
+</file>
+</xliff>

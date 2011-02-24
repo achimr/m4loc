@@ -1,0 +1,11 @@
+Source and description of XLIFF test files
+
+File Name		    Source		Description
+=========		    ======		===========
+languagetool.xlf	    languagetool.org	Java resources converted with Okapi
+Manual-12-AltTrans.xlf	    Okapi
+RB-11-Test01.xlf	    Okapi
+RB-12-Test02.xlf	    Okapi
+Sample_AlmostEverything_1.2_strict.xlf		XLIFF Standard
+word_docx.xlf		    n/a			File authored with Word 2007 and converted with Okapi
+Xslt-Test01.xlf		    Okapi

@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:okp="okapi-framework:xliff-extensions">
+<file original="MessagesBundle.properties" source-language="en-us" target-language="fr-fr" datatype="x-text/x-properties">
+<body>
+<trans-unit id="1" resname="be" xml:space="preserve">
+<source xml:lang="en-us">Belarusian</source>
+<target xml:lang="fr-fr">Belarusian</target>
+<note> English translation of LanguageTool
+ Copyright (C) 2006 Daniel Naber (http://www.danielnaber.de), Marcin Milkowski</note>
+</trans-unit>
+<trans-unit id="2" resname="ca" xml:space="preserve">
+<source xml:lang="en-us">Catalan</source>
+<target xml:lang="fr-fr">Catalan</target>
+</trans-unit>
+<trans-unit id="3" resname="category_case" xml:space="preserve">
+<source xml:lang="en-us">Capitalization</source>
+<target xml:lang="fr-fr">Capitalization</target>
+</trans-unit>
+<trans-unit id="4" resname="category_false_friend" xml:space="preserve">
+<source xml:lang="en-us">False friends</source>
+<target xml:lang="fr-fr">False friends</target>
+</trans-unit>
+<trans-unit id="5" resname="category_grammar" xml:space="preserve">
+<source xml:lang="en-us">Grammar</source>
+<target xml:lang="fr-fr">Grammar</target>
+</trans-unit>
+<trans-unit id="6" resname="category_misc" xml:space="preserve">
+<source xml:lang="en-us">Miscellaneous</source>
+<target xml:lang="fr-fr">Miscellaneous</target>
+</trans-unit>
+<trans-unit id="7" resname="category_typo" xml:space="preserve">
+<source xml:lang="en-us">Possible Typo</source>
+<target xml:lang="fr-fr">Possible Typo</target>
+</trans-unit>
+<trans-unit id="8" resname="checkDone" xml:space="preserve">
+<source xml:lang="en-us">Check done, <ph id="1">{0}</ph> potential problems found</source>
+<target xml:lang="fr-fr">Check done, <ph id="1">{0}</ph> potential problems found</target>
+</trans-unit>
+<trans-unit id="9" resname="checkText" xml:space="preserve">
+<source xml:lang="en-us">&amp;Check Text</source>
+<target xml:lang="fr-fr">&amp;Check Text</target>
+</trans-unit>
+<trans-unit id="10" resname="correctionMessage" xml:space="preserve">
+<source xml:lang="en-us">Correction:</source>
+<target xml:lang="fr-fr">Correction:</target>
+</trans-unit>
+<trans-unit id="11" resname="cs" xml:space="preserve">
+<source xml:lang="en-us">Czech</source>
+<target xml:lang="fr-fr">Czech</target>
+</trans-unit>
+<trans-unit id="12" resname="da" xml:space="preserve">
+<source xml:lang="en-us">Danish</source>
+<target xml:lang="fr-fr">Danish</target>
+</trans-unit>
+<trans-unit id="13" resname="de" xml:space="preserve">
+<source xml:lang="en-us">German</source>
+<target xml:lang="fr-fr">German</target>
+</trans-unit>
+<trans-unit id="14" resname="desc_comma_whitespace" xml:space="preserve">
+<source xml:lang="en-us">Use of whitespace before comma and before/after parentheses</source>
+<target xml:lang="fr-fr">Use of whitespace before comma and before/after parentheses</target>
+</trans-unit>
+<trans-unit id="15" resname="desc_double_punct" xml:space="preserve">
+<source xml:lang="en-us">Use of two consecutive dots or commas</source>
+<target xml:lang="fr-fr">Use of two consecutive dots or commas</target>
+</trans-unit>
+<trans-unit id="16" resname="desc_repetition" xml:space="preserve">
+<source xml:lang="en-us">Word repetition (e.g. 'will will')</source>
+<target xml:lang="fr-fr">Word repetition (e.g. 'will will')</target>
+</trans-unit>
+<trans-unit id="17" resname="desc_repetition_short" xml:space="preserve">
+<source xml:lang="en-us">Word repetition</source>
+<target xml:lang="fr-fr">Word repetition</target>
+</trans-unit>
+<trans-unit id="18" resname="desc_unpaired_brackets" xml:space="preserve">
+<source xml:lang="en-us">Unpaired braces, brackets, quotation marks and similar symbols</source>
+<target xml:lang="fr-fr">Unpaired braces, brackets, quotation marks and similar symbols</target>
+</trans-unit>
+<trans-unit id="19" resname="desc_uppercase_sentence" xml:space="preserve">
+<source xml:lang="en-us">Checks that a sentence starts with an uppercase letter</source>
+<target xml:lang="fr-fr">Checks that a sentence starts with an uppercase letter</target>
+</trans-unit>
+<trans-unit id="20" resname="desc_whitespacerepetition" xml:space="preserve">
+<source xml:lang="en-us">Whitespace repetition (bad formatting)</source>
+<target xml:lang="fr-fr">Whitespace repetition (bad formatting)</target>
+</trans-unit>
+<trans-unit id="21" resname="double_dots_short" xml:space="preserve">
+<source xml:lang="en-us">Two consecutive dots</source>
+<target xml:lang="fr-fr">Two consecutive dots</target>
+</trans-unit>
+<trans-unit id="22" resname="double_commas_short" xml:space="preserve">
+<source xml:lang="en-us">Two consecutive comma</source>
+<target xml:lang="fr-fr">Two consecutive comma</target>
+</trans-unit>
+<trans-unit id="23" resname="en" xml:space="preserve">
+<source xml:lang="en-us">English</source>
+<target xml:lang="fr-fr">English</target>
+</trans-unit>
+<trans-unit id="24" resname="enterText" xml:space="preserve">
+<source xml:lang="en-us">Please type or paste text to check in the top area</source>
+<target xml:lang="fr-fr">Please type or paste text to check in the top area</target>
+</trans-unit>
+<trans-unit id="25" resname="enterText2" xml:space="preserve">
+<source xml:lang="en-us">Please insert text to check here</source>
+<target xml:lang="fr-fr">Please insert text to check here</target>
+</trans-unit>
+<trans-unit id="26" resname="eo" xml:space="preserve">
+<source xml:lang="en-us">Esperanto</source>
+<target xml:lang="fr-fr">Esperanto</target>
+</trans-unit>
+<trans-unit id="27" resname="errorContext" xml:space="preserve">
+<source xml:lang="en-us">Context:</source>
+<target xml:lang="fr-fr">Context:</target>
+</trans-unit>
+<trans-unit id="28" resname="errorMessage" xml:space="preserve">
+<source xml:lang="en-us">Message:</source>
+<target xml:lang="fr-fr">Message:</target>
+</trans-unit>
+<trans-unit id="29" resname="es" xml:space="preserve">
+<source xml:lang="en-us">Spanish</source>
+<target xml:lang="fr-fr">Spanish</target>
+</trans-unit>
+<trans-unit id="30" resname="false_friend" xml:space="preserve">
+<source xml:lang="en-us">False friend</source>
+<target xml:lang="fr-fr">False friend</target>
+</trans-unit>
+<trans-unit id="31" resname="false_friend_desc" xml:space="preserve">
+<source xml:lang="en-us">false friend hint for:</source>
+<target xml:lang="fr-fr">false friend hint for:</target>
+</trans-unit>
+<trans-unit id="32" resname="false_friend_hint" xml:space="preserve">
+<source xml:lang="en-us">Hint: "<ph id="1">{0}</ph>" (<ph id="2">{1}</ph>) means <ph id="3">{2}</ph> (<ph id="4">{3}</ph>).</source>
+<target xml:lang="fr-fr">Hint: "<ph id="1">{0}</ph>" (<ph id="2">{1}</ph>) means <ph id="3">{2}</ph> (<ph id="4">{3}</ph>).</target>
+</trans-unit>
+<trans-unit id="33" resname="false_friend_suggestion" xml:space="preserve">
+<source xml:lang="en-us">Did you mean <ph id="1">{0}</ph>?</source>
+<target xml:lang="fr-fr">Did you mean <ph id="1">{0}</ph>?</target>
+</trans-unit>
+<trans-unit id="34" resname="fr" xml:space="preserve">
+<source xml:lang="en-us">French</source>
+<target xml:lang="fr-fr">French</target>
+</trans-unit>
+<trans-unit id="35" resname="gl" xml:space="preserve">
+<source xml:lang="en-us">Galician</source>
+<target xml:lang="fr-fr">Galician</target>
+</trans-unit>
+<trans-unit id="36" resname="guiCancelButton" xml:space="preserve">
+<source xml:lang="en-us">Cancel</source>
+<target xml:lang="fr-fr">Cancel</target>
+</trans-unit>
+<trans-unit id="37" resname="guiCheckComplete" xml:space="preserve">
+<source xml:lang="en-us">LanguageTool check is complete.</source>
+<target xml:lang="fr-fr">LanguageTool check is complete.</target>
+</trans-unit>
+<trans-unit id="38" resname="guiConfigWindowTitle" xml:space="preserve">
+<source xml:lang="en-us">LanguageTool Options</source>
+<target xml:lang="fr-fr">LanguageTool Options</target>
+</trans-unit>
+<trans-unit id="39" resname="guiDemoText" xml:space="preserve">
+<source xml:lang="en-us">This is a example input to to show you how LanguageTool works. Note, however, that it does not include a spell checka.</source>
+<target xml:lang="fr-fr">This is a example input to to show you how LanguageTool works. Note, however, that it does not include a spell checka.</target>
+</trans-unit>
+<trans-unit id="40" resname="guiMatchCount" xml:space="preserve">
+<source xml:lang="en-us">Potential errors:</source>
+<target xml:lang="fr-fr">Potential errors:</target>
+</trans-unit>
+<trans-unit id="41" resname="guiMenuAbout" xml:space="preserve">
+<source xml:lang="en-us">&amp;About...</source>
+<target xml:lang="fr-fr">&amp;About...</target>
+</trans-unit>
+<trans-unit id="42" resname="guiMenuAddRules" xml:space="preserve">
+<source xml:lang="en-us">Load &amp;Rule File</source>
+<target xml:lang="fr-fr">Load &amp;Rule File</target>
+</trans-unit>
+<trans-unit id="43" resname="guiMenuCheckClipboard" xml:space="preserve">
+<source xml:lang="en-us">&amp;Check Text in Clipboard</source>
+<target xml:lang="fr-fr">&amp;Check Text in Clipboard</target>
+</trans-unit>
+<trans-unit id="44" resname="guiMenuFile" xml:space="preserve">
+<source xml:lang="en-us">&amp;File</source>
+<target xml:lang="fr-fr">&amp;File</target>
+</trans-unit>
+<trans-unit id="45" resname="guiMenuHelp" xml:space="preserve">
+<source xml:lang="en-us">&amp;Help</source>
+<target xml:lang="fr-fr">&amp;Help</target>
+</trans-unit>
+<trans-unit id="46" resname="guiMenuHide" xml:space="preserve">
+<source xml:lang="en-us">&amp;Hide to System Tray</source>
+<target xml:lang="fr-fr">&amp;Hide to System Tray</target>
+</trans-unit>
+<trans-unit id="47" resname="guiMenuOpen" xml:space="preserve">
+<source xml:lang="en-us">&amp;Open...</source>
+<target xml:lang="fr-fr">&amp;Open...</target>
+</trans-unit>
+<trans-unit id="48" resname="guiMenuOptions" xml:space="preserve">
+<source xml:lang="en-us">Option&amp;s...</source>
+<target xml:lang="fr-fr">Option&amp;s...</target>
+</trans-unit>
+<trans-unit id="49" resname="guiMenuQuit" xml:space="preserve">
+<source xml:lang="en-us">&amp;Quit</source>
+<target xml:lang="fr-fr">&amp;Quit</target>
+</trans-unit>
+<trans-unit id="50" resname="guiMenuShowMainWindow" xml:space="preserve">
+<source xml:lang="en-us">Open Main Window</source>
+<target xml:lang="fr-fr">Open Main Window</target>
+</trans-unit>
+<trans-unit id="51" resname="guiMotherTongue" xml:space="preserve">
+<source xml:lang="en-us">Your mother tongue:</source>
+<target xml:lang="fr-fr">Your mother tongue:</target>
+</trans-unit>
+<trans-unit id="52" resname="guiNoErrorsFound" xml:space="preserve">
+<source xml:lang="en-us">No errors or warnings found (language: <ph id="1">{0}</ph>)</source>
+<target xml:lang="fr-fr">No errors or warnings found (language: <ph id="1">{0}</ph>)</target>
+</trans-unit>
+<trans-unit id="53" resname="guiNoErrorsFoundSelectedText" xml:space="preserve">
+<source xml:lang="en-us">No errors or warnings found in selected text (language: <ph id="1">{0}</ph>)</source>
+<target xml:lang="fr-fr">No errors or warnings found in selected text (language: <ph id="1">{0}</ph>)</target>
+</trans-unit>
+<trans-unit id="54" resname="guiOKButton" xml:space="preserve">
+<source xml:lang="en-us">&amp;OK</source>
+<target xml:lang="fr-fr">&amp;OK</target>
+</trans-unit>
+<trans-unit id="55" resname="guiOOoChangeButton" xml:space="preserve">
+<source xml:lang="en-us">&amp;Change</source>
+<target xml:lang="fr-fr">&amp;Change</target>
+</trans-unit>
+<trans-unit id="56" resname="guiOOoCloseButton" xml:space="preserve">
+<source xml:lang="en-us">Close</source>
+<target xml:lang="fr-fr">Close</target>
+</trans-unit>
+<trans-unit id="57" resname="guiOOoIgnoreAllButton" xml:space="preserve">
+<source xml:lang="en-us">Ignore All</source>
+<target xml:lang="fr-fr">Ignore All</target>
+</trans-unit>
+<trans-unit id="58" resname="guiOOoIgnoreButton" xml:space="preserve">
+<source xml:lang="en-us">Ignore</source>
+<target xml:lang="fr-fr">Ignore</target>
+</trans-unit>
+<trans-unit id="59" resname="guiOOoOptionsButton" xml:space="preserve">
+<source xml:lang="en-us">Options...</source>
+<target xml:lang="fr-fr">Options...</target>
+</trans-unit>
+<trans-unit id="60" resname="guiProgressWindowTitle" xml:space="preserve">
+<source xml:lang="en-us">LanguageTool: Checking Text...</source>
+<target xml:lang="fr-fr">LanguageTool: Checking Text...</target>
+</trans-unit>
+<trans-unit id="61" resname="guiReplaceWindowTitle" xml:space="preserve">
+<source xml:lang="en-us">Replace text</source>
+<target xml:lang="fr-fr">Replace text</target>
+</trans-unit>
+<trans-unit id="62" resname="guiReplaceWithOtherText" xml:space="preserve">
+<source xml:lang="en-us">&lt;other text></source>
+<target xml:lang="fr-fr">&lt;other text></target>
+</trans-unit>
+<trans-unit id="63" resname="guiRunOnPort" xml:space="preserve">
+<source xml:lang="en-us">Run as server on po&amp;rt</source>
+<target xml:lang="fr-fr">Run as server on po&amp;rt</target>
+</trans-unit>
+<trans-unit id="64" resname="guiSelectionCheckComplete" xml:space="preserve">
+<source xml:lang="en-us">LanguageTool check of selected text is complete.</source>
+<target xml:lang="fr-fr">LanguageTool check of selected text is complete.</target>
+</trans-unit>
+<trans-unit id="65" resname="incorrect_case" xml:space="preserve">
+<source xml:lang="en-us">This sentence does not start with an uppercase letter</source>
+<target xml:lang="fr-fr">This sentence does not start with an uppercase letter</target>
+</trans-unit>
+<trans-unit id="66" resname="is" xml:space="preserve">
+<source xml:lang="en-us">Icelandic</source>
+<target xml:lang="fr-fr">Icelandic</target>
+</trans-unit>
+<trans-unit id="67" resname="it" xml:space="preserve">
+<source xml:lang="en-us">Italian</source>
+<target xml:lang="fr-fr">Italian</target>
+</trans-unit>
+<trans-unit id="68" resname="lt" xml:space="preserve">
+<source xml:lang="en-us">Lithuanian</source>
+<target xml:lang="fr-fr">Lithuanian</target>
+</trans-unit>
+<trans-unit id="69" resname="missing_space_after_comma" xml:space="preserve">
+<source xml:lang="en-us">Put a space after the comma</source>
+<target xml:lang="fr-fr">Put a space after the comma</target>
+</trans-unit>
+<trans-unit id="70" resname="ml" xml:space="preserve">
+<source xml:lang="en-us">Malayalam</source>
+<target xml:lang="fr-fr">Malayalam</target>
+</trans-unit>
+<trans-unit id="71" resname="nl" xml:space="preserve">
+<source xml:lang="en-us">Dutch</source>
+<target xml:lang="fr-fr">Dutch</target>
+</trans-unit>
+<trans-unit id="72" resname="no_space_after" xml:space="preserve">
+<source xml:lang="en-us">Don't put a space after the opening parenthesis</source>
+<target xml:lang="fr-fr">Don't put a space after the opening parenthesis</target>
+</trans-unit>
+<trans-unit id="73" resname="no_space_before" xml:space="preserve">
+<source xml:lang="en-us">Don't put a space before the closing parenthesis</source>
+<target xml:lang="fr-fr">Don't put a space before the closing parenthesis</target>
+</trans-unit>
+<trans-unit id="74" resname="no_space_before_dot" xml:space="preserve">
+<source xml:lang="en-us">Don't put a space before the full stop</source>
+<target xml:lang="fr-fr">Don't put a space before the full stop</target>
+</trans-unit>
+<trans-unit id="75" resname="pl" xml:space="preserve">
+<source xml:lang="en-us">Polish</source>
+<target xml:lang="fr-fr">Polish</target>
+</trans-unit>
+<trans-unit id="76" resname="repetition" xml:space="preserve">
+<source xml:lang="en-us">Possible typo: you repeated a word</source>
+<target xml:lang="fr-fr">Possible typo: you repeated a word</target>
+</trans-unit>
+<trans-unit id="77" resname="result1" xml:space="preserve">
+<source xml:lang="en-us">&lt;br>&lt;b> <ph id="1">{0}</ph>. Line <ph id="2">{1}</ph>, column <ph id="3">{2}</ph>&lt;/b>&lt;br></source>
+<target xml:lang="fr-fr">&lt;br>&lt;b> <ph id="1">{0}</ph>. Line <ph id="2">{1}</ph>, column <ph id="3">{2}</ph>&lt;/b>&lt;br></target>
+</trans-unit>
+<trans-unit id="78" resname="resultAreaText" xml:space="preserve">
+<source xml:lang="en-us">Results will appear here</source>
+<target xml:lang="fr-fr">Results will appear here</target>
+</trans-unit>
+<trans-unit id="79" resname="resultTime" xml:space="preserve">
+<source xml:lang="en-us">&lt;br>Time: <ph id="1">{0}</ph>ms (including <ph id="2">{1}</ph>ms for rule matching)&lt;br></source>
+<target xml:lang="fr-fr">&lt;br>Time: <ph id="1">{0}</ph>ms (including <ph id="2">{1}</ph>ms for rule matching)&lt;br></target>
+</trans-unit>
+<trans-unit id="80" resname="ru" xml:space="preserve">
+<source xml:lang="en-us">Russian</source>
+<target xml:lang="fr-fr">Russian</target>
+</trans-unit>
+<trans-unit id="81" resname="sk" xml:space="preserve">
+<source xml:lang="en-us">Slovak</source>
+<target xml:lang="fr-fr">Slovak</target>
+</trans-unit>
+<trans-unit id="82" resname="sl" xml:space="preserve">
+<source xml:lang="en-us">Slovenian</source>
+<target xml:lang="fr-fr">Slovenian</target>
+</trans-unit>
+<trans-unit id="83" resname="space_after_comma" xml:space="preserve">
+<source xml:lang="en-us">Put a space after the comma, but not before the comma</source>
+<target xml:lang="fr-fr">Put a space after the comma, but not before the comma</target>
+</trans-unit>
+<trans-unit id="84" resname="startChecking" xml:space="preserve">
+<source xml:lang="en-us">Starting check in <ph id="1">{0}</ph></source>
+<target xml:lang="fr-fr">Starting check in <ph id="1">{0}</ph></target>
+</trans-unit>
+<trans-unit id="85" resname="sv" xml:space="preserve">
+<source xml:lang="en-us">Swedish</source>
+<target xml:lang="fr-fr">Swedish</target>
+</trans-unit>
+<trans-unit id="86" resname="textLanguage" xml:space="preserve">
+<source xml:lang="en-us">Text Language:</source>
+<target xml:lang="fr-fr">Text Language:</target>
+</trans-unit>
+<trans-unit id="87" resname="two_commas" xml:space="preserve">
+<source xml:lang="en-us">Two consecutive commas</source>
+<target xml:lang="fr-fr">Two consecutive commas</target>
+</trans-unit>
+<trans-unit id="88" resname="two_dots" xml:space="preserve">
+<source xml:lang="en-us">Two consecutive dots</source>
+<target xml:lang="fr-fr">Two consecutive dots</target>
+</trans-unit>
+<trans-unit id="89" resname="uk" xml:space="preserve">
+<source xml:lang="en-us">Ukrainian</source>
+<target xml:lang="fr-fr">Ukrainian</target>
+</trans-unit>
+<trans-unit id="90" resname="unpaired_brackets" xml:space="preserve">
+<source xml:lang="en-us">Unpaired bracket or similar symbol</source>
+<target xml:lang="fr-fr">Unpaired bracket or similar symbol</target>
+</trans-unit>
+<trans-unit id="91" resname="whitespace_repetition" xml:space="preserve">
+<source xml:lang="en-us">Possible typo: you repeated a whitespace</source>
+<target xml:lang="fr-fr">Possible typo: you repeated a whitespace</target>
+</trans-unit>
+<trans-unit id="92" resname="ro" xml:space="preserve">
+<source xml:lang="en-us">Romanian</source>
+<target xml:lang="fr-fr">Romanian</target>
+</trans-unit>
+</body>
+</file>
+</xliff>

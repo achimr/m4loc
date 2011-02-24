@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:okp="okapi-framework:xliff-extensions" version="1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-strict.xsd">
+<file original="\Test01.xml" source-language="en" target-language="fr" datatype="xml" okp:settings="okf_xml@P%P3DDAFFAE" okp:encoding="utf-8">
+<header>
+<tool tool-id="P25CBF2C2" tool-name="Okapi.Utilities.Set01" tool-version="1.0.21.0" />
+</header>
+<body>
+<trans-unit id="1">
+<source xml:lang="en">Text attribute</source>
+<target xml:lang="fr">Text attribute</target>
+</trans-unit>
+<trans-unit id="2">
+<source xml:lang="en">Paragraph.</source>
+<target xml:lang="fr">Paragraph.</target>
+</trans-unit>
+<trans-unit id="3" resname="ID1">
+<source xml:lang="en">Paragraph 2</source>
+<target xml:lang="fr">Paragraph 2</target>
+</trans-unit>
+<trans-unit id="4">
+<source xml:lang="en">Text with <g id="1">code</g> and <g id="2">bold</g>.</source>
+<target xml:lang="fr">Text with <g id="1">code</g> and <g id="2">bold</g>.</target>
+</trans-unit>
+<trans-unit id="5">
+<source xml:lang="en">Text of the footnote</source>
+<target xml:lang="fr">Text of the footnote</target>
+</trans-unit>
+<trans-unit id="6" resname="OtherID">
+<source xml:lang="en">Text with a footnote<x id="1"/> and more text</source>
+<target xml:lang="fr">Text with a footnote<x id="1"/> and more text</target>
+</trans-unit>
+<trans-unit id="7">
+<source xml:lang="en">Text with <g id="2"><x id="1"/></g> and more text.</source>
+<target xml:lang="fr">Text with <g id="2"><x id="1"/></g> and more text.</target>
+</trans-unit>
+
+<trans-unit id="11">
+<source xml:lang="en">Sentence 1. Sentence 2.</source>
+<!-- Segmented data --> <?abc def ?>
+<seg-source><mrk mid='0' mtype='seg'>Sentence 1.</mrk>
+<mrk mid='1' mtype='seg'>Sentence 2.</mrk></seg-source>
+</trans-unit>
+
+<trans-unit id="11withWarning"> <!-- should generate a segmentation warning -->
+<source xml:lang="en">Sentence 1. Sentence 2.</source>
+<!-- Segmented data --> <?abc def ?>
+<seg-source><mrk mid='0' mtype='seg'>Sentence 1.</mrk>
+<mrk mid='1' mtype='seg'>Sentence 2+diff.</mrk></seg-source>
+</trans-unit>
+
+</body>
+</file>
+</xliff>

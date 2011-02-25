@@ -33,7 +33,7 @@ if(@ARGV != 0) {
     die "Usage: $0 [-a] < <text file with markup> > <plain text file>\n";
 }
 
-my $regex = $opt_a?qr/<.*?>/:qr/<\/?(g|x|bx|ex|lb)(\s.*?)?>/;
+my $regex = $opt_a?qr/<.*?>/:qr/<\/?(g|x|bx|ex|lb|mrk)(\s.*?)?>/;
 
 while(<>) {
     chomp;
@@ -56,8 +56,8 @@ remove_markup.pl: Removal of bracketed markup from text file
 
 This tool removes markup from a sentence-split, optionally tokenized text file 
 to allow the translation of the contained text with Moses. By default it only
-removes XLIFF C<< <x> >> and C<< <g> >> tags, while with the -a option the script
-removes all angle-bracketed tags.
+removes XLIFF C<< <x> >>, C<< <bx> >>, C<< <ex> >>, C<< <lb> >>, C<< <mrk> >> and C<< <g> >> tags, 
+while with the -a option the script removes all angle-bracketed tags.
 
 Input is expected to be UTF-8 encoded (without a leading byte-order mark U+FEFF) and 
 output will be UTF-8 encoded as well. Any unmatched brackets do not get removed as these can 

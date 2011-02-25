@@ -33,7 +33,7 @@ if(@ARGV != 1) {
     die "Usage: $0 <source InlineText file> < <target plain text file > > <target InlineText file>\n";
 }
 
-my $inline_tags = "(g|x|bx|ex|lb)";
+my $inline_tags = "(g|x|bx|ex|lb|mrk)";
 
 open(my $ifh,"<:utf8",$ARGV[0]);
 
@@ -88,7 +88,7 @@ sub reinsert_elements {
 
     my $target = "";
     my $i;
-    my %cur_open;
+    my @cur_open;
     my %pending_close;
     while($traced_target =~ /\G(.*?)\s*\|(\d+)-(\d+)\|\s*/g) {
 	my %trace_elem = ();
@@ -101,17 +101,24 @@ sub reinsert_elements {
 
 $DB::single = 2;
 my $foo = 1;
+	
 	# Close any elements currently open that close in the current trace
-	# TBD: This can lead to overlaping paired tags because of two reasons
-	# 1. tags closed in original order, not in order in which they were opened
-	# 2. if multiple tags are open, any one of them could be closed
-	foreach $i (map($elements[$_]->{ct},reverse sort keys %cur_open)) {
-	    if(exists $trace_elem{$i}) {
-		$target .= $elements[$trace_elem{$i}]->{txt}." ";
-		delete $cur_open{$elements[$trace_elem{$i}]->{ot}};
-		$added{$elements[$trace_elem{$i}]->{ot}} = 1;
-		$added{$trace_elem{$i}} = 1;
-		delete $trace_elem{$i};
+	# Determine the deepest tag that needs to be closed in the cur_open stack
+	my ($deepest) = grep($trace_elem{$elements[$_]->{ct}},@cur_open);
+	# Close all elements on the cur_open stack up to the deepest
+	if(defined $deepest) {
+	    my $ot;
+	    while(defined($ot = pop @cur_open)) {
+		my $ct = $elements[$ot]->{ct};
+		$target .= $elements[$ct]->{txt}." ";
+		$added{$ot} = 1;
+		$added{$ct} = 1;
+		if(exists $trace_elem{$ct}) {
+		    delete $trace_elem{$ct};
+		}
+		if($ot == $deepest) {
+		    last;
+		}
 	    }
 	}
 
@@ -119,9 +126,10 @@ my $foo = 1;
 	foreach $i (sort keys %trace_elem) {
 	    # If the tag is a closing tag for a currently open tag and the paired tag doesn't cover text
 	    if(exists $elements[$i]->{ot}) {
-		if(exists $cur_open{$elements[$i]->{ot}} && $elements[$i]->{s} == $elements[$elements[$i]->{ot}]->{s}) {
+		my($j) = grep($cur_open[$_] == $elements[$i]->{ot},0..$#cur_open);
+		if(defined $j && $elements[$i]->{s} == $elements[$j]->{s}) {
 		    $target .= $elements[$i]->{txt}." ";
-		    delete $cur_open{$elements[$trace_elem{$i}]->{ot}};
+		    splice @cur_open,$elements[$trace_elem{$i}]->{ot},1;
 		    $added{$elements[$trace_elem{$i}]->{ot}} = 1;
 		    $added{$trace_elem{$i}} = 1;
 		    delete $trace_elem{$i};
@@ -130,7 +138,7 @@ my $foo = 1;
 	    # Opening tag
 	    elsif(exists $elements[$i]->{ct}) {
 		$target .= $elements[$i]->{txt}." ";
-		$cur_open{$i} = $i;
+		push @cur_open, $i;
 		# Was the currently opened element waiting to be closed?
 		# If yes, add it to the tags to close for the current trace
 		if(exists $pending_close{$elements[$i]->{ct}}) {
@@ -151,15 +159,25 @@ my $foo = 1;
 	$target .= "$1 ";
 
 	# Only closing trace elements are left, add them if the tags are currently open
-	foreach $i (map($elements[$_]->{ct},reverse sort keys %cur_open)) {
-	    if(exists $trace_elem{$i}) {
-		$target .= $elements[$trace_elem{$i}]->{txt}." ";
-		delete $cur_open{$elements[$trace_elem{$i}]->{ot}};
-		$added{$elements[$trace_elem{$i}]->{ot}} = 1;
-		$added{$trace_elem{$i}} = 1;
-		delete $trace_elem{$i};
+	# Determine the deepest tag that needs to be closed in the cur_open stack
+	($deepest) = grep($trace_elem{$elements[$_]->{ct}},@cur_open);
+	# Close all elements on the cur_open stack up to the deepest
+	if(defined $deepest) {
+	    my $ot;
+	    while(defined($ot = pop @cur_open)) {
+		my $ct = $elements[$ot]->{ct};
+		$target .= $elements[$ct]->{txt}." ";
+		$added{$ot} = 1;
+		$added{$ct} = 1;
+		if(exists $trace_elem{$ct}) {
+		    delete $trace_elem{$ct};
+		}
+		if($ot == $deepest) {
+		    last;
+		}
 	    }
 	}
+
 	# Store remaining closing tags in a hash
 	%pending_close = %trace_elem;
     }

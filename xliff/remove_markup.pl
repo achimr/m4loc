@@ -39,6 +39,13 @@ while(<>) {
     chomp;
     s/$regex//g;
     s/\s\s+/ /g;
+    # Escape characters that are problematic for Moses
+    # Info: http://www.precisiontranslationtools.com/index.php?option=com_content&view=article&id=94:are-there-characters-that-cause-problems-in-moses&catid=30:key-concepts&Itemid=57
+    s/</&lt;/g;
+    s/>/&gt;/g;
+    s/\[/&#91;/g;
+    s/\]/&#93;/g;
+    s/\|/&#124;/g;
     print;
     print "\n";
 }

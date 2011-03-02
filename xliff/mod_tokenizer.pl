@@ -4,9 +4,9 @@
 # Script mod_tokenizer.pl tokenizes text in InlineText format; this data format is
 # tikal -xm output (Okapi Framework) output. mod_tokenizer is a part of M4Loc effort
 # http://code.google.com/p/m4loc/. The output is tokenized/segmented InlineText
-# that doesn't have tokenized InlineText tags and url addresses - high level 
+# that doesn't have tokenized InlineText tags and url addresses - high level
 # technical specification can be found at: http://code.google.com/p/m4loc/ ,
-# click on "Specifications" and select "ModTokenizer - Technical Specification". 
+# click on "Specifications" and select "ModTokenizer - Technical Specification".
 # Moses' tokenizer.perl and nonbreaking_prefixes direcory are required by the script.
 #
 #
@@ -34,7 +34,6 @@ use 5.10.0;
 use strict;
 use File::Temp;
 use XML::LibXML::Reader;
-use Switch;
 use FindBin qw($Bin);
 
 #GLOBAL VARIABLES
@@ -55,14 +54,14 @@ my $str_out = "";
 #array of allowed InlineText tags. Only these are allowed, any other will cause a warning
 my @InlineTexttags = qw/g x bx ex/;
 
-
-#for QA (testing) only; if it is needed to analyze tmp file (before tokenizer.perl) 
+#for QA (testing) only; if it is needed to analyze tmp file (before tokenizer.perl)
 #set up to 1, otherwise 0
 my $deletetmp = 1;
 
 my $mydir = "$Bin/nonbreaking_prefixes";
 
 my %NONBREAKING_PREFIX = ();
+
 #my $QUIET = 0;
 #my $HELP = 0;
 #my $AGGRESSIVE = 0;
@@ -93,39 +92,36 @@ if ($HELP) {
 }
 
 #create tmp file for storing encapsulated inLineText data (output of tikal -xm)
-my $tmpout = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => $deletetmp );
+my $tmpout  = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => $deletetmp );
+my $tmpout2 = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => $deletetmp );
 
-#for some OS it can be good to uncomment these lines. 
+#for some OS it can be good to uncomment these lines.
 #New versions of linux are OK with only STDOUT specified as utf8
 #binmode( $tmpout, ":utf8" );
 #binmode( STDIN,   ":utf8" );
-binmode( STDOUT,  ":utf8" );
+binmode( STDOUT, ":utf8" );
 
 #add XML init string to document to be processible by xml parser (XML::LibXML Reader)
-print( $tmpout "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<xliff_inLines xml:space=\"preserve\">");
+print( $tmpout "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<InlineText xml:space=\"preserve\">" );
 
 #read and store STDIN into the temporary file
 my $line;
 while ( $line = <STDIN> ) {
     chomp($line);
+
     #extra whitespace and new line added (white space - solve URL\n case; URL \n
     #is OK, however URL\n would cause leave one line out)
     print( $tmpout $line . " \n" );
 }
-print( $tmpout "</xliff_inLines>" );
+print( $tmpout "</InlineText>" );
 close($tmpout);
 
-
 #loading nonbreaking_prefixes
-load_prefixes($language,\%NONBREAKING_PREFIX);
+load_prefixes( $language, \%NONBREAKING_PREFIX );
 
-if (scalar(%NONBREAKING_PREFIX) eq 0){
-	print STDERR "Warning: No known abbreviations for language '$language'\n";
+if ( scalar(%NONBREAKING_PREFIX) eq 0 ) {
+    print STDERR "Warning: No known abbreviations for language '$language'\n";
 }
-
-
-
-
 
 #for QA purposes only
 #my $f;
@@ -153,8 +149,23 @@ if ( length($str_tok) > 0 ) {
 }
 
 #write down output
-print STDOUT $str_out;
+print $tmpout2 $str_out;
 $str_out = "";
+
+close $tmpout2;
+
+#clean extra spaces in tmp file and print as STDOUT
+open($tmpout2);
+while (<$tmpout2>) {
+    my $line = $_;
+    chomp($line);
+
+    $line =~ s/ +/ /g;
+    $line =~ s/^ //;
+    $line =~ s/ $//;
+    print STDOUT $line . "\n";
+}
+close $tmpout2;
 
 #END OF MAIN PROGRAM
 
@@ -165,18 +176,20 @@ sub processNode {
     my $reader = shift;
 
     #don't process top element (xliff_inLines)
-    if ( $reader->name eq "xliff_inLines" ) {
+    if ( $reader->name eq "InlineText" ) {
         return;
     }
 
     #if a node is a string -- add content to str_tok
     if ( $reader->name eq "#text" ) {
-            $str_tok .= $reader->value;
+        my $node = $reader->preserveNode();
+        $str_tok .= $node->toString();    #$reader->value;
     }
 
     #if node is a start of some element
     if ( $reader->nodeType == 1 ) {
         $str_tag .= "<" . $reader->name;
+
         #read and add attributes, if any
         if ( $reader->moveToFirstAttribute ) {
             do {
@@ -202,9 +215,8 @@ sub processNode {
         }
 
         #check whether the tag is correct InlineText tag
-        if (!($reader->name ~~ @InlineTexttags)) {
-            print STDERR "Warning: input has not valid InlineText format!!\n".
-	    "Problematic tag: <".$reader->name.">\nContinue...\n";
+        if ( !( $reader->name ~~ @InlineTexttags ) ) {
+            print STDERR "Warning: input has not valid InlineText format!!\n" . "Problematic tag: <" . $reader->name . ">\nContinue...\n";
         }
 
         #add starting tag
@@ -223,7 +235,6 @@ sub processNode {
             $str_tok = "";
         }
 
-
         #add closing element tag
         $str_out .= "</" . $reader->name . ">";
     }
@@ -235,141 +246,167 @@ sub tokenize {
     my $str       = shift;
     my $tokenized = "";
 
-    #check whether string contains some URL patterns
-    my @arr = split( /((http[s]?:\/\/|ftp[s]?:\/\/|www\.)\S*)/i, $str );
-    for ( my $i = 0 ; $i <= $#arr ; $i++ ) {
-        switch ( ( $i + 1 ) % 3 ) {
-            case 0 {
-            }    # do nothing; or create a better regexp and remove this useless case ;)
-            case 1 {
-		 #split input into lines, since tokenize_str can treat lines 
-		my @lines = split(/\n/,$arr[$i]);
-		foreach(@lines){
-	 	$tokenized .= tokenize_str($_);
-		}
-		if($arr[$i] !~ /\n$/){chomp($tokenized);}
+    #split input into lines, since tokenize_str can treat lines only
+    my @lines = split( /\n/, $str );
+    foreach my $lin (@lines) {
 
+        #check whether string contains some URL patterns
+        my @arr = split( /((http[s]?:\/\/|ftp[s]?:\/\/|www\.)\S*)/i, $lin );
+        for ( my $i = 0 ; $i <= $#arr ; $i++ ) {
+
+            #insert not-tokenized URL
+            if ( $i % 2 ) { $tokenized .= " $arr[$i] "; }
+            else {
+
+                #badly created XLIFFes can contain hidden XML tags(e.g. &lt;...) - don't tokenize them
+                my @btag = split( /(&\w+;\S*)/i, $arr[$i] );
+                for ( my $j = 0 ; $j <= $#btag ; $j++ ) {
+
+                    #insert not-tokenized btag
+                    if ( $j % 2 ) {
+                        $tokenized .= " $btag[$j] ";
+                        print STDERR "WARNING: incorrectly created original XLIFF. String: \"$btag[$j]\" should be wrapped in special tags.\n";
+                    }
+                    else {
+
+                        #insert tokenized rest of the line
+                        $tokenized .= tokenize_str( $btag[$j] );
+                        chomp($tokenized);
+                    }
+                }
             }
-            case 2 { $tokenized .= " $arr[$i] "; }
         }
+        $tokenized .= "\n";
     }
+
+    #if the input ($str) doesn't end with \n (problem between lines and xlm tags) then chomp
+    if ( $str !~ /\n$/ ) { chomp($tokenized); }
+
     return $tokenized;
 }
 
-
 #tokenize string (taken from Moses' tokenizer.perl - function tokenize)
 sub tokenize_str {
-	my($text) = @_;
-	chomp($text);
-	$text = " $text ";
-	
-	# seperate out all "other" special characters
-	$text =~ s/([^\p{IsAlnum}\s\.\'\`\,\-])/ $1 /g;
-	
-	#multi-dots stay together
-	$text =~ s/\.([\.]+)/ DOTMULTI$1/g;
-	while($text =~ /DOTMULTI\./) {
-		$text =~ s/DOTMULTI\.([^\.])/DOTDOTMULTI $1/g;
-		$text =~ s/DOTMULTI\./DOTDOTMULTI/g;
-	}
+    my ($text) = @_;
+    chomp($text);
+    $text = " $text ";
 
-	# seperate out "," except if within numbers (5,300)
-	$text =~ s/([^\p{IsN}])[,]([^\p{IsN}])/$1 , $2/g;
-	# separate , pre and post number
-	$text =~ s/([\p{IsN}])[,]([^\p{IsN}])/$1 , $2/g;
-	$text =~ s/([^\p{IsN}])[,]([\p{IsN}])/$1 , $2/g;
-	      
-	# turn `into '
-	$text =~ s/\`/\'/g;
-	
-	#turn '' into "
-	$text =~ s/\'\'/ \" /g;
+    # seperate out all "other" special characters
+    $text =~ s/([^\p{IsAlnum}\s\.\'\`\,\-])/ $1 /g;
 
-	if ($language eq "en") {
-		#split contractions right
-		$text =~ s/([^\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
-		$text =~ s/([^\p{IsAlpha}\p{IsN}])[']([\p{IsAlpha}])/$1 ' $2/g;
-		$text =~ s/([\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
-		$text =~ s/([\p{IsAlpha}])[']([\p{IsAlpha}])/$1 '$2/g;
-		#special case for "1990's"
-		$text =~ s/([\p{IsN}])[']([s])/$1 '$2/g;
-	} elsif (($language eq "fr") or ($language eq "it")) {
-		#split contractions left	
-		$text =~ s/([^\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
-		$text =~ s/([^\p{IsAlpha}])[']([\p{IsAlpha}])/$1 ' $2/g;
-		$text =~ s/([\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
-		$text =~ s/([\p{IsAlpha}])[']([\p{IsAlpha}])/$1' $2/g;
-	} else {
-		$text =~ s/\'/ \' /g;
-	}
-	
-	#word token method
-	my @words = split(/\s/,$text);
-	$text = "";
-	for (my $i=0;$i<(scalar(@words));$i++) {
-		my $word = $words[$i];
-		if ( $word =~ /^(\S+)\.$/) {
-			my $pre = $1;
-			if (($pre =~ /\./ && $pre =~ /\p{IsAlpha}/) || ($NONBREAKING_PREFIX{$pre} && $NONBREAKING_PREFIX{$pre}==1) || ($i<scalar(@words)-1 && ($words[$i+1] =~ /^[\p{IsLower}]/))) {
-				#no change
-			} elsif (($NONBREAKING_PREFIX{$pre} && $NONBREAKING_PREFIX{$pre}==2) && ($i<scalar(@words)-1 && ($words[$i+1] =~ /^[0-9]+/))) {
-				#no change
-			} else {
-				$word = $pre." .";
-			}
-		}
-		$text .= $word." ";
-	}		
+    #multi-dots stay together
+    $text =~ s/\.([\.]+)/ DOTMULTI$1/g;
+    while ( $text =~ /DOTMULTI\./ ) {
+        $text =~ s/DOTMULTI\.([^\.])/DOTDOTMULTI $1/g;
+        $text =~ s/DOTMULTI\./DOTDOTMULTI/g;
+    }
 
-	# clean up extraneous spaces
-	$text =~ s/ +/ /g;
-	$text =~ s/^ //g;
-	$text =~ s/ $//g;
+    # seperate out "," except if within numbers (5,300)
+    $text =~ s/([^\p{IsN}])[,]([^\p{IsN}])/$1 , $2/g;
 
-	#restore multi-dots
-	while($text =~ /DOTDOTMULTI/) {
-		$text =~ s/DOTDOTMULTI/DOTMULTI./g;
-	}
-	$text =~ s/DOTMULTI/./g;
-	
-	#ensure final line break
-	$text .= "\n" unless $text =~ /\n$/;
+    # separate , pre and post number
+    $text =~ s/([\p{IsN}])[,]([^\p{IsN}])/$1 , $2/g;
+    $text =~ s/([^\p{IsN}])[,]([\p{IsN}])/$1 , $2/g;
 
-	return $text;
+    # turn `into '
+    $text =~ s/\`/\'/g;
+
+    #turn '' into "
+    $text =~ s/\'\'/ \" /g;
+
+    if ( $language eq "en" ) {
+
+        #split contractions right
+        $text =~ s/([^\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
+        $text =~ s/([^\p{IsAlpha}\p{IsN}])[']([\p{IsAlpha}])/$1 ' $2/g;
+        $text =~ s/([\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
+        $text =~ s/([\p{IsAlpha}])[']([\p{IsAlpha}])/$1 '$2/g;
+
+        #special case for "1990's"
+        $text =~ s/([\p{IsN}])[']([s])/$1 '$2/g;
+    }
+    elsif ( ( $language eq "fr" ) or ( $language eq "it" ) ) {
+
+        #split contractions left
+        $text =~ s/([^\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
+        $text =~ s/([^\p{IsAlpha}])[']([\p{IsAlpha}])/$1 ' $2/g;
+        $text =~ s/([\p{IsAlpha}])[']([^\p{IsAlpha}])/$1 ' $2/g;
+        $text =~ s/([\p{IsAlpha}])[']([\p{IsAlpha}])/$1' $2/g;
+    }
+    else {
+        $text =~ s/\'/ \' /g;
+    }
+
+    #word token method
+    my @words = split( /\s/, $text );
+    $text = "";
+    for ( my $i = 0 ; $i < ( scalar(@words) ) ; $i++ ) {
+        my $word = $words[$i];
+        if ( $word =~ /^(\S+)\.$/ ) {
+            my $pre = $1;
+            if ( ( $pre =~ /\./ && $pre =~ /\p{IsAlpha}/ ) || ( $NONBREAKING_PREFIX{$pre} && $NONBREAKING_PREFIX{$pre} == 1 ) || ( $i < scalar(@words) - 1 && ( $words[ $i + 1 ] =~ /^[\p{IsLower}]/ ) ) ) {
+
+                #no change
+            }
+            elsif ( ( $NONBREAKING_PREFIX{$pre} && $NONBREAKING_PREFIX{$pre} == 2 ) && ( $i < scalar(@words) - 1 && ( $words[ $i + 1 ] =~ /^[0-9]+/ ) ) ) {
+
+                #no change
+            }
+            else {
+                $word = $pre . " .";
+            }
+        }
+        $text .= $word . " ";
+    }
+
+    # clean up extraneous spaces
+    $text =~ s/ +/ /g;
+    $text =~ s/^ //g;
+    $text =~ s/ $//g;
+
+    #restore multi-dots
+    while ( $text =~ /DOTDOTMULTI/ ) {
+        $text =~ s/DOTDOTMULTI/DOTMULTI./g;
+    }
+    $text =~ s/DOTMULTI/./g;
+
+    #ensure final line break
+    $text .= "\n" unless $text =~ /\n$/;
+
+    return $text;
 }
-
 
 #taken from Moses' tokenizer.perl
 sub load_prefixes {
-	my ($language, $PREFIX_REF) = @_;
-	
-	my $prefixfile = "$mydir/nonbreaking_prefix.$language";
-	
-	#default back to English if we don't have a language-specific prefix file
-	if (!(-e $prefixfile)) {
-		$prefixfile = "$mydir/nonbreaking_prefix.en";
-		print STDERR "WARNING: No known abbreviations for language '$language', attempting fall-back to English version...\n";
-		die ("ERROR: No abbreviations files found in $mydir\n") unless (-e $prefixfile);
-	}
-	
-	if (-e "$prefixfile") {
-		open(PREFIX, "<:utf8", "$prefixfile");
-		while (<PREFIX>) {
-			my $item = $_;
-			chomp($item);
-			if (($item) && (substr($item,0,1) ne "#")) {
-				if ($item =~ /(.*)[\s]+(\#NUMERIC_ONLY\#)/) {
-					$PREFIX_REF->{$1} = 2;
-				} else {
-					$PREFIX_REF->{$item} = 1;
-				}
-			}
-		}
-		close(PREFIX);
-	}
-	
-}
+    my ( $language, $PREFIX_REF ) = @_;
 
+    my $prefixfile = "$mydir/nonbreaking_prefix.$language";
+
+    #default back to English if we don't have a language-specific prefix file
+    if ( !( -e $prefixfile ) ) {
+        $prefixfile = "$mydir/nonbreaking_prefix.en";
+        print STDERR "WARNING: No known abbreviations for language '$language', attempting fall-back to English version...\n";
+        die("ERROR: No abbreviations files found in $mydir\n") unless ( -e $prefixfile );
+    }
+
+    if ( -e "$prefixfile" ) {
+        open( PREFIX, "<:utf8", "$prefixfile" );
+        while (<PREFIX>) {
+            my $item = $_;
+            chomp($item);
+            if ( ($item) && ( substr( $item, 0, 1 ) ne "#" ) ) {
+                if ( $item =~ /(.*)[\s]+(\#NUMERIC_ONLY\#)/ ) {
+                    $PREFIX_REF->{$1} = 2;
+                }
+                else {
+                    $PREFIX_REF->{$item} = 1;
+                }
+            }
+        }
+        close(PREFIX);
+    }
+
+}
 
 __END__
 

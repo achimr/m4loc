@@ -154,7 +154,8 @@ $str_out = "";
 
 close $tmpout2;
 
-#clean extra spaces in tmp file and print as STDOUT
+#clean extra spaces and substitute special characters ([,],|;<> are solved already) that can't be given as Moses input. 
+#The output print into STDOUT
 open($tmpout2);
 while (<$tmpout2>) {
     my $line = $_;
@@ -163,6 +164,10 @@ while (<$tmpout2>) {
     $line =~ s/ +/ /g;
     $line =~ s/^ //;
     $line =~ s/ $//;
+    $line =~ s/\[/&#x5b;/g;
+    $line =~ s/\]/&#x5d;/g;
+    $line =~ s/\|/&#x7c;/g;
+
     print STDOUT $line . "\n";
 }
 close $tmpout2;

@@ -263,10 +263,16 @@ sub tokenize {
             if ( $i % 2 ) { $tokenized .= " $arr[$i] "; }
             else {
 
-                #badly created XLIFFes can contain hidden XML tags(e.g. &lt;...) - don't tokenize them
+                #badly created XLIFFes can contain hidden XML tags(e.g. &lt;...)
+		#don't tokenize these hidden XML tags (choose them from string and put to $tokenized untokenized)
                 my @btag = split( /(&\w+;\S*)/i, $arr[$i] );
                 for ( my $j = 0 ; $j <= $#btag ; $j++ ) {
+		#put space between the last hidden tag and the next standard character
+		$btag[$j] =~ s/(.*)(&\w+;)(.*)/$1$2 $3/g;
+		$btag[$j] =~ s/(&amp;)( )(\#\w+;)/$1$3/g;
+		$btag[$j] =~ s/(&amp;)( )(\#x\w+;)/$1$3/g;
 
+#if($btag[$j] =~ m/(&amp;)( )(#\w+;)/pg){print "\nOO$1$3OO\n"};
                     #insert not-tokenized btag
                     if ( $j % 2 ) {
                         $tokenized .= " $btag[$j] ";

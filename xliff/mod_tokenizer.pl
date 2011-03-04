@@ -256,12 +256,15 @@ sub tokenize {
     foreach my $lin (@lines) {
 
         #check whether string contains some URL patterns
-        my @arr = split( /((http[s]?:\/\/|ftp[s]?:\/\/|www\.)\S*)/i, $lin );
+        my @arr = split( /((http[s]?:\/\/|ftp[s]?:\/\/|www\.)\S+)/i, $lin );
+	#necessary to employ special variable which is $i+1$, since it is needed to remove every third item, (e.g. 3,6), from regexp 
+	#with $i staring from 0 would be difficult
+	my $iter = 1;
         for ( my $i = 0 ; $i <= $#arr ; $i++ ) {
-
-            #insert not-tokenized URL
-            if ( $i % 2 ) { $tokenized .= " $arr[$i] "; }
-            else {
+            #if second item in the regexp => insert not-tokenized URL
+            if ( ($iter % 3) == 2) { $tokenized .= " $arr[$i] "; }
+	    #if first item in the regexp => 
+            if ( ($iter % 3) == 1) {
 
                 #badly created XLIFFes can contain hidden XML tags(e.g. &lt;...)
 		#don't tokenize these hidden XML tags (choose them from string and put to $tokenized untokenized)
@@ -272,7 +275,6 @@ sub tokenize {
 		$btag[$j] =~ s/(&amp;)( )(\#\w+;)/$1$3/g;
 		$btag[$j] =~ s/(&amp;)( )(\#x\w+;)/$1$3/g;
 
-#if($btag[$j] =~ m/(&amp;)( )(#\w+;)/pg){print "\nOO$1$3OO\n"};
                     #insert not-tokenized btag
                     if ( $j % 2 ) {
                         $tokenized .= " $btag[$j] ";
@@ -286,6 +288,7 @@ sub tokenize {
                     }
                 }
             }
+	    $iter++;
         }
         $tokenized .= "\n";
     }
@@ -465,4 +468,5 @@ Tomáš Hudík, thudik@moraviaworldwide.com
 =head3 TODO:
 
 1. add - if str_out is too long - print it to file
+2. wchich XML entities (< is &lt;, & is &amp;,...) should be in "normal" form(<) and which should be encoded (&amp;)
 

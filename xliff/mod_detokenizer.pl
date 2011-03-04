@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 
 #
-# Script mod_detokenizer.pl detokenizes data from Markup Reinserter; after
+# Script mod_detokenizer.pl detokenizes data from Markup Reinserter; after 
 # this step, tikal -lm takes place. mod_detokenizer is a part of M4Loc effort
-# http://code.google.com/p/m4loc/. Moses' detokenizer.perl and
+# http://code.google.com/p/m4loc/. Moses' detokenizer.perl and 
 # nonbreaking_prefixes direcory are required by the script.
 #
 #
@@ -35,6 +35,7 @@ use File::Temp;
 #tokenizer.perl script (part of Moses SW package)
 my $lang = "en";
 
+
 #print out help info if some incorrect options has been inserted
 my $HELP = 0;
 
@@ -57,38 +58,37 @@ if ($HELP) {
     exit;
 }
 
+
 my $line;
 
 #create tmp file for storing encapsulated inLineText data (output of tikal -xm)
-my $tmpout =
-  File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => "1" );
+my $tmpout = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => "1" );
 
 #for QA only
-my $str = "";
+my $str="";
 
 #read and process STDIN
 while ( $line = <STDIN> ) {
-    chomp($line);
+chomp($line);
+#for QA only
+#$str .= $line."\n";
 
-    #for QA only
-    #$str .= $line."\n";
-
-    #insert space before < tag if is not already
-    if ( $line =~ /\S\<(?!\/)/ ) {
-        $line =~ s/(\S)\<(?!\/)/$1 \</g;
+     #insert space before < tag if is not already
+     if( $line =~ /\S\<(?!\/)/ ){
+    	$line =~ s/(\S)\<(?!\/)/$1 \</g;
     }
 
     #remove space after closing tag /> if there is some
-    if ( $line =~ /(\/\>|\<\/)\s+\S/ ) {
-        $line =~ s/(\/\>|\<\/)\s+/$1/g;
+    if($line =~ /(\/\>|\<\/)\s+\S/){
+    	$line =~ s/(\/\>|\<\/)\s+/$1/g;
     }
 
     #remove space after closing tag </ ..> if there is some
-    if ( $line =~ /(\<\/(\w+|\s+))\>\s+/ ) {
-        $line =~ s/(\<\/(\w+|\s+))\>\s+/$1\>/g;
+    if($line =~ /(\<\/(\w+|\s+))\>\s+/){
+      $line =~ s/(\<\/(\w+|\s+))\>\s+/$1\>/g;
     }
 
-    print( $tmpout $line . "\n" );
+     print($tmpout $line . "\n" );
 }
 
 #for QA only
@@ -97,7 +97,8 @@ while ( $line = <STDIN> ) {
 
 close($tmpout);
 
-system("./detokenizer.perl -l $lang < $tmpout 2> /dev/null ");
+system("perl detokenizer.perl -q -l $lang < $tmpout");
+#2> /dev/null ");
 
 __END__
 

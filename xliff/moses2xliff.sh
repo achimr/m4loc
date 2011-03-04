@@ -29,6 +29,6 @@
 # Usage: moses2xliff.sh <file base name> <BCP 47 source language identifier> <BCP 47 target language identifier>
 # TBD: parameter check and usage description output
 
-./reinsert.pl $1.tok.$2 < $1.ucs.$3 > $1.ins.$2
+./reinsert.pl $1.tok.$2 < $1.ucs.$3 > $1.ins.$3
 ./mod_detokenize.pl -l $3 < $1.ins.$3 > $1.det.$3
 tikal.sh -lm $1.xlf 

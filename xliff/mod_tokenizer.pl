@@ -99,7 +99,8 @@ my $tmpout2 = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => $d
 #New versions of linux are OK with only STDOUT specified as utf8
 #binmode( $tmpout, ":utf8" );
 #binmode( STDIN,   ":utf8" );
-binmode( STDOUT, ":utf8" );
+#binmode( STDOUT, ":utf8" );
+binmode( $tmpout2, ":utf8" );
 
 #add XML init string to document to be processible by xml parser (XML::LibXML Reader)
 print( $tmpout "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<InlineText xml:space=\"preserve\">" );
@@ -270,13 +271,17 @@ sub tokenize {
 		#don't tokenize these hidden XML tags (choose them from string and put to $tokenized untokenized)
                 my @btag = split( /(&\w+;\S*)/i, $arr[$i] );
                 for ( my $j = 0 ; $j <= $#btag ; $j++ ) {
-		#put space between the last hidden tag and the next standard character
-		$btag[$j] =~ s/(.*)(&\w+;)(.*)/$1$2 $3/g;
+
+		#treateing UNICODE numbers
 		$btag[$j] =~ s/(&amp;)( )(\#\w+;)/$1$3/g;
 		$btag[$j] =~ s/(&amp;)( )(\#x\w+;)/$1$3/g;
 
                     #insert not-tokenized btag
-                    if ( $j % 2 ) {
+                    if ( $j % 2 ) {		
+			#put space between the last hidden tag and the next standard character
+			#$btag[$j] =~ s/(.*)(&\w+;)(.*)/$1$2 $3/g;
+print "\n|$btag[$j]|\n";			
+			$btag[$j] =~ s/(\w+;)(\w+)$/$1 $2/;
                         $tokenized .= " $btag[$j] ";
                         print STDERR "WARNING: incorrectly created original XLIFF. String: \"$btag[$j]\" should be wrapped in special tags.\n";
                     }

@@ -272,7 +272,7 @@ sub tokenize {
                 my @btag = split( /(&\w+;\S*)/i, $arr[$i] );
                 for ( my $j = 0 ; $j <= $#btag ; $j++ ) {
 
-		#treateing UNICODE numbers
+		#treating UNICODE numbers
 		$btag[$j] =~ s/(&amp;)( )(\#\w+;)/$1$3/g;
 		$btag[$j] =~ s/(&amp;)( )(\#x\w+;)/$1$3/g;
 
@@ -280,7 +280,6 @@ sub tokenize {
                     if ( $j % 2 ) {		
 			#put space between the last hidden tag and the next standard character
 			#$btag[$j] =~ s/(.*)(&\w+;)(.*)/$1$2 $3/g;
-print "\n|$btag[$j]|\n";			
 			$btag[$j] =~ s/(\w+;)(\w+)$/$1 $2/;
                         $tokenized .= " $btag[$j] ";
                         print STDERR "WARNING: incorrectly created original XLIFF. String: \"$btag[$j]\" should be wrapped in special tags.\n";

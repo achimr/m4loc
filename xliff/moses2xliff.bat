@@ -35,14 +35,14 @@ if not exist %1.ucs.%3 goto notarget
 
 perl %~dp0reinsert.pl %1.tok.%2 < %1.ucs.%3 > %1.ins.%3
 if not exist %1.ins.%3 goto errinsert
-perl %~dp0mod_detokenizer.pl -l %3 < %1.ins.%3 > %1.det.%3
-if not exist %1.det.%3 goto errdetok
-tikal.bat -lm %1.xlf 
+perl %~dp0mod_detokenizer.pl -l %3 < %1.ins.%3 > %1.%3
+if not exist %1.%3 goto errdetok
+tikal.bat -lm %1 
 
 goto end 
 
 :notok
-echo Error: tokenized source file %1.tok.$2 not found
+echo Error: tokenized source file %1.tok.%2 not found
 goto end
 
 :notarget
@@ -54,7 +54,7 @@ echo Error: Markup reinsertion failed. File %1.ins.%3 not found
 goto end
 
 :errdetok
-echo Error: Detokenization failed. File %1.det.%3 not found
+echo Error: Detokenization failed. File %1.%3 not found
 goto end
 
 :usage

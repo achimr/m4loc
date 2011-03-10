@@ -30,7 +30,7 @@ binmode(STDOUT,":utf8");
 #our $opt_a;
 #getopts("a");
 if(@ARGV != 1) {
-    die "Usage: $0 <source InlineText file> < <target plain text file > > <target InlineText file>\n";
+    die "Usage: $0 source_InlineText_file < target_plain_text_file > target_InlineText_file\n";
 }
 
 my $inline_tags = "(g|x|bx|ex|lb|mrk)";

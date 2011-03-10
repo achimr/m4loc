@@ -179,7 +179,7 @@ my $foo = 1;
 	}
 
 	# Store remaining closing tags in a hash
-	%pending_close = %trace_elem;
+	@pending_close{ keys %trace_elem } = values %trace_elem;
     }
 
     # Emit the elements that weren't added yet to the end of the target

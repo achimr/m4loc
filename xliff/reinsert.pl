@@ -30,7 +30,7 @@ binmode(STDOUT,":utf8");
 #our $opt_a;
 #getopts("a");
 if(@ARGV != 1) {
-    die "Usage: $0 source_InlineText_file < target_plain_text_file > target_InlineText_file\n";
+    die "Usage: perl $0 source_InlineText_file < target_plain_text_file > target_InlineText_file\n";
 }
 
 my $inline_tags = "(g|x|bx|ex|lb|mrk)";
@@ -102,9 +102,6 @@ sub reinsert_elements {
 	    }
 	}
 
-$DB::single = 2;
-my $foo = 1;
-	
 	# Close any elements currently open that close in the current trace
 	# Determine the deepest tag that needs to be closed in the cur_open stack
 	my ($deepest) = grep($trace_elem{$elements[$_]->{ct}},@cur_open);
@@ -132,7 +129,7 @@ my $foo = 1;
 		my($j) = grep($cur_open[$_] == $elements[$i]->{ot},0..$#cur_open);
 		if(defined $j && $elements[$i]->{s} == $elements[$j]->{s}) {
 		    $target .= $elements[$i]->{txt}." ";
-		    splice @cur_open,$elements[$trace_elem{$i}]->{ot},1;
+		    splice @cur_open,$j,1;
 		    $added{$elements[$trace_elem{$i}]->{ot}} = 1;
 		    $added{$trace_elem{$i}} = 1;
 		    delete $trace_elem{$i};
@@ -145,7 +142,7 @@ my $foo = 1;
 		# Was the currently opened element waiting to be closed?
 		# If yes, add it to the tags to close for the current trace
 		if(exists $pending_close{$elements[$i]->{ct}}) {
-		    $trace_elem{$elements[$i]->{ct}} = 1;
+		    $trace_elem{$elements[$i]->{ct}} = $elements[$i]->{ct};
 		    delete $pending_close{$elements[$i]->{ct}};
 		}
 		delete $trace_elem{$i};

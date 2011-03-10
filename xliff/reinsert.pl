@@ -71,7 +71,7 @@ sub extract_inline {
 	    # find the last corresponding opening tag in the list
 	    for (my $j = $#elements; $j >= 0; $j--) {
 		if($elements[$j]->{'el'} eq $3) {
-		    push @elements, {'el'=>$3,'s'=>$i,'txt'=>"</$tag_text>",'ot'=>$j};
+		    push @elements, {'el'=>$3,'s'=>$i,'e'=>$i-1,'txt'=>"</$tag_text>",'ot'=>$j};
 		    $elements[$j]->{'ct'} = $#elements;
 		    last;
 		}
@@ -95,6 +95,9 @@ sub reinsert_elements {
 	# Determine which inline elements are opened or closed in the current trace
 	foreach $i (0..$#elements) {
 	    if($elements[$i]->{s} >= $2 && $elements[$i]->{s} <= $3) {
+		$trace_elem{$i} = $i;
+	    }
+	    if(exists $elements[$i]->{e} && $elements[$i]->{e} >= $2 && $elements[$i]->{e} <= $3) {
 		$trace_elem{$i} = $i;
 	    }
 	}

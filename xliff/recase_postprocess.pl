@@ -55,4 +55,23 @@ while(<$ifh>) {
 
 close($ifh);
 
+__END__
+
+=head1 NAME
+
+recase_postprocess.pl: Reinsert Moses traces into recased Moses output
+
+=head1 USAGE
+
+    perl recase_postprocess.pl lowercased_traced_target < recased_target > recased_traced_target
+
+Script to reinsert Moses traces (phrase alignment info) into recased target
+language text. The traces are required to correctly reinsert formatting
+markup (e.g. XLIFF inline elements) with the script C<reinsert.pl>.
+C<lowercased_traced_target> is the output of Moses with the
+C<-t> option. C<recased_target> is the output of a recasing model
+created with Moses (refer to the Moses documentation for further information).
+
+Input is expected to be UTF-8 encoded (without a leading byte-order 
+mark U+FEFF) and output will be UTF-8 encoded as well. 
 

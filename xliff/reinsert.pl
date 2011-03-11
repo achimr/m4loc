@@ -30,7 +30,7 @@ binmode(STDOUT,":utf8");
 #our $opt_a;
 #getopts("a");
 if(@ARGV != 1) {
-    die "Usage: perl $0 source_InlineText_file < target_plain_text_file > target_InlineText_file\n";
+    die "Usage: perl $0 source_InlineText_file < traced_target > target_InlineText_file\n";
 }
 
 my $inline_tags = "(g|x|bx|ex|lb|mrk)";
@@ -161,4 +161,48 @@ sub reinsert_elements {
 
     return $target;
 }
+
+__END__
+
+=head1 NAME
+
+reinsert.pl: Reinsert markup from source InlineText into translation
+with Moses
+
+=head1 USAGE
+
+    perl reinsert.pl source_InlineText_file < traced_target > target_InlineText_file
+
+Script to reinsert markup from source InlineText into plain text Moses output
+with traces (traces are phrase alignment information). 
+
+C<source_InlineText_file> is expected to be a tokenized version of the 
+InlineText file format output by the Moses Text Filter of 
+L<Okapi|http://okapi.opentag.com>. 
+
+C<traced_target> is the output of the Moses decoder invoked with the C<-t> 
+option. When invoked with the C<-t> option, the Moses decoder outputs 
+phrase alignment information which indicates which source phrases where 
+translated with which target phrases. C<reinsert.pl> uses this information 
+to insert XLIFF inline elements roughly at the correct positions in 
+the target text.
+
+The script follows these principles when reinserting inline elements:
+
+=over
+
+=item 1. All inline elements that are present in the source text have to be placed in the target text
+
+=item 2. For paired inline elements the closing tag always has to be placed after the opening tag
+
+=item 3. Multiple paired inline elements can only enclose each other, they cannot overlap (this is required by XML) 
+
+=item 4. Opening tags of inline elements are to be placed as close as possible before the correct target word token
+
+=item 5. Closing tags of inline elements are to be placed as close as possible after the correct target word token (unless this violates constraint 2.)
+
+=back
+
+Input is expected to be UTF-8 encoded (without a leading byte-order 
+mark U+FEFF) and output will be UTF-8 encoded as well. 
 

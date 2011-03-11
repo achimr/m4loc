@@ -31,3 +31,25 @@ while(<>) {
     print;
     print "\n";
 }
+
+__END__
+
+=head1 NAME
+
+recase_preprocess.pl: Remove Moses traces from translated text
+
+=head1 USAGE
+
+    perl recase_preprocess.pl < target_with_traces > target_tokenized
+
+Script to remove Moses traces (phrase alignment info) from translated text
+in preparation for correcting upper-/lowercase with the recaser. Moses traces -
+phrase alignment information enclosed in vertical bars C<|start-end|> - are
+required to reinsert XLIFF inline element markup back into the text. However,
+when applying a recaser model, the traces negatively impact the upper- and
+lowercasing. To avoid this, the traces can be temporarily removed before
+recasing and then reinserted with C<recase_postprocess.pl>. 
+
+Input is expected to be UTF-8 encoded (without a leading byte-order 
+mark U+FEFF) and output will be UTF-8 encoded as well. 
+

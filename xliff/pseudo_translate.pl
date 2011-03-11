@@ -86,3 +86,35 @@ sub _translate_text_pig_latin {
     return $text;
 }
 
+__END__
+
+=head1 NAME
+
+pseudo_translate.pl: Pseudo-translation of text with trace output
+
+=head1 USAGE
+
+    perl pseudo_translate.pl [-n max_phrase_length] < tokenized_lowercased_source_file > pseudo_translated_output_file
+
+This script pseudo-translates text to L<pig latin|http://en.wikipedia.org/wiki/Pig_latin>. 
+First it selects phrases up to length max_phrase_length (default: 1) from the source text. 
+It then rearranges the phrases in random order and translates their content into pig latin.
+The phrase selection and reordering information is output as traces which indicate the token 
+indices in the original text: |start-end|. This is equivalent to the output of the
+Moses SMT engine with the -t option specified. The pseudo translation script can therefore
+be used as a standin for the engine for testing purposes.
+
+The script does not handle upper- and lowercasing.
+
+Input is expected to be UTF-8 encoded (without a leading byte-order mark U+FEFF) and 
+output will be UTF-8 encoded as well. 
+
+=head1 OPTIONS
+
+=over
+
+=item -n
+
+Indicates the maximum phrase length for phrase selection from the source. Default is 1.
+
+=back

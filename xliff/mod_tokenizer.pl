@@ -168,6 +168,8 @@ while (<$tmpout2>) {
     $line =~ s/\[/&#x5b;/g;
     $line =~ s/\]/&#x5d;/g;
     $line =~ s/\|/&#x7c;/g;
+    #this is still open question whether character '&' should be represented as  '&amp;' or '&' 
+    $line =~ s/\&amp;/\&/g;
 
     print STDOUT $line . "\n";
 }

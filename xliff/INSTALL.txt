@@ -1,0 +1,35 @@
+M4Loc project -  Installation 
+
+
+PREREQUISITES
+================
+Unix/Windows OS
+Perl v 5.10.0
+Okapi Tikal ( code.google.com/p/okapi/downloads/list , documentation: www.opentag.com/okapi/wiki/index.php?title=Tikal )
+
+
+INSTALLATION
+==============
+There is no need to have a special installation procedure. It is sufficient to simply copy all 
+scripts into one directory.
+
+
+SCRIPT EXECUTION
+==================
+Linux/Unix:
+./script_name
+
+Windows:
+perl script_name
+
+Example:
+./mod_tokenizer.pl -l en < INF > OUTF
+
+perl will execute mod_tokenizer.pl script with -l option (this option has value set to "en"). 
+The input is "INF" (it can be file, or other standard input). The output 
+"OUTF" is regular file. If no output is specified, it will be written to the standard output 
+(most often it is display).
+
+For a deeper understanding of scripts, read README.txt
+
+

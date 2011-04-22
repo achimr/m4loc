@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+require 5.010;
+
 #
 # Extraction of a bilingual corpus from a TMX file
 #
@@ -45,10 +47,12 @@ $reader->for_tu2(sub{
 	$srcText =~ s/<\S.*?>//g;
 	$srcText =~ s/^\s*//;
 	$srcText =~ s/\s*$//;
+	$srcText =~ s/\R//g;
 	$tgtText =~ s/<ut>.*?<\/ut>//g;
 	$tgtText =~ s/<\S.*?>//g;
 	$tgtText =~ s/^\s*//;
 	$tgtText =~ s/\s*$//;
+	$tgtText =~ s/\R//g;
 	chomp $srcText;
 	chomp $tgtText;
 	if($srcText && $tgtText) {

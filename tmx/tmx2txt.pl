@@ -43,11 +43,15 @@ $reader->for_tu2(sub{
 	# Necessary as some tu's can contain newlines
 	my $srcText = $$tu{$srcLang};
 	my $tgtText = $$tu{$tgtLang};
+	# Workaround for bug in XML::TMX::Reader
+	$srcText =~ s/ARRAY\(.*?\)//g;
 	$srcText =~ s/<ut>.*?<\/ut>//g;
 	$srcText =~ s/<\S.*?>//g;
 	$srcText =~ s/^\s*//;
 	$srcText =~ s/\s*$//;
 	$srcText =~ s/\R//g;
+	# Workaround for bug in XML::TMX::Reader
+	$tgtText =~ s/ARRAY\(.*?\)//g;
 	$tgtText =~ s/<ut>.*?<\/ut>//g;
 	$tgtText =~ s/<\S.*?>//g;
 	$tgtText =~ s/^\s*//;

@@ -29,6 +29,7 @@
 use strict;
 use 5.10.0;
 use File::Temp;
+use FindBin qw($Bin);
 
 #GLOBAL VARIABLES
 
@@ -104,7 +105,7 @@ if(!($lang ~~ @l)){
     print STDERR "WARNING: mod_detokenizer can't work with language: '$lang', falling back to 'en'\n";
     $lang = "en";
 }
-system("perl detokenizer.perl -q -l $lang < $tmpout");
+system("perl $Bin/detokenizer.perl -q -l $lang < $tmpout");
 #2> /dev/null ");
 
 __END__

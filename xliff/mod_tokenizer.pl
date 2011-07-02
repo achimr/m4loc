@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+$|++;
 
 #
 # Script mod_tokenizer.pl tokenizes text in InlineText format; this data format is
@@ -29,12 +30,12 @@
 #
 #
 
-#use at least version 5.10 (or higher, due to ~~ operator)
-use 5.10.0;
 use strict;
-use File::Temp;
+use IO::Handle;
 use XML::LibXML::Reader;
 use FindBin qw($Bin);
+# Necessary for use in Unix pipe?
+autoflush STDIN;
 
 #GLOBAL VARIABLES
 
@@ -51,20 +52,11 @@ my $str_tag = "";
 #output string - it is a combination(merger) of $str_tok and $str_tag
 my $str_out = "";
 
-#array of allowed InlineText tags. Only these are allowed, any other will cause a warning
-my @InlineTexttags = qw/g x bx ex/;
-
-#for QA (testing) only; if it is needed to analyze tmp file (before tokenizer.perl)
-#set up to 1, otherwise 0
-my $deletetmp = 1;
-
 my $mydir = "$Bin/nonbreaking_prefixes";
 
 my %NONBREAKING_PREFIX = ();
 
-#my $QUIET = 0;
 #my $HELP = 0;
-#my $AGGRESSIVE = 0;
 
 #tmp string
 my $tmp;
@@ -75,7 +67,6 @@ my $HELP = 0;
 #END OF GLOBAL VARIABLES
 
 #MAIN PROGRAM
-
 while (@ARGV) {
     $_ = shift;
     /^-l$/ && ( $language = shift, next );
@@ -91,32 +82,6 @@ if ($HELP) {
     exit;
 }
 
-#create tmp file for storing encapsulated inLineText data (output of tikal -xm)
-my $tmpout  = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => $deletetmp );
-my $tmpout2 = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => $deletetmp );
-
-#for some OS it can be good to uncomment these lines.
-#New versions of linux are OK with only STDOUT specified as utf8
-#binmode( $tmpout, ":utf8" );
-#binmode( STDIN,   ":utf8" );
-#binmode( STDOUT, ":utf8" );
-binmode( $tmpout2, ":utf8" );
-
-#add XML init string to document to be processible by xml parser (XML::LibXML Reader)
-print( $tmpout "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<InlineText xml:space=\"preserve\">" );
-
-#read and store STDIN into the temporary file
-my $line;
-while ( $line = <STDIN> ) {
-    chomp($line);
-
-    #extra whitespace and new line added (white space - solve URL\n case; URL \n
-    #is OK, however URL\n would cause leave one line out)
-    print( $tmpout $line . " \n" );
-}
-print( $tmpout "</InlineText>" );
-close($tmpout);
-
 #loading nonbreaking_prefixes
 load_prefixes( $language, \%NONBREAKING_PREFIX );
 
@@ -124,42 +89,41 @@ if ( scalar(%NONBREAKING_PREFIX) eq 0 ) {
     print STDERR "Warning: No known abbreviations for language '$language'\n";
 }
 
-#for QA purposes only
-#my $f;
-#open($f,$tmpout->filename);
-#while(my $ll=<$f>){
-#   print $ll;
-#}
-#close($f);
-#print "\n----------------------------------------------------------------------\n";
-#end
+my $line;
+while ( $line = <STDIN> ) {
+    $str_out = "";
+    chomp($line);
 
-#open and process the tmp file with LibXML::Reader
-my $reader = new XML::LibXML::Reader( location => $tmpout->filename )
-  or die "Error: cannot read temp file: $tmpout->filename\n";
+    my $inline_xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<InlineText xml:space=\"preserve\">";
+    #extra whitespace and new line added (white space - solve URL\n case; URL \n
+    #is OK, however URL\n would cause leave one line out)
+    $inline_xml .= $line . " \n" ;
+    $inline_xml .= "</InlineText>";
+    
+    #process the tmp file with LibXML::Reader
+    my $reader = new XML::LibXML::Reader( string => $inline_xml );
+    
+    #read XML nodes
+    while ( eval{$reader->read} ) {
+        # AR bad: this subroutine modifies the global $str_out
+        processNode($reader);
+    }
 
-#read XML nodes
-while ( $reader->read ) {
-    processNode($reader);
-}
+    if($@) {
+	warn $line,"\n",$@;
+	print "-1\n";
+	next;
+    }
 
-#tokenize remaining str_tok if any
-if ( length($str_tok) > 0 ) {
-    $str_out .= " " . tokenize($str_tok);
-    $str_tok = "";
-}
-
-#write down output
-print $tmpout2 $str_out;
-$str_out = "";
-
-close $tmpout2;
-
-#clean extra spaces and substitute special characters ([,],|;<> are solved already) that can't be given as Moses input. 
-#The output print into STDOUT
-open($tmpout2);
-while (<$tmpout2>) {
-    my $line = $_;
+    
+    #tokenize remaining str_tok if any
+    if ( length($str_tok) > 0 ) {
+        $str_out .= " " . tokenize($str_tok);
+        $str_tok = "";
+    }
+    
+    #clean extra spaces and substitute special characters ([,],|;<> are solved already) that can't be given as Moses input. 
+    my $line = $str_out;
     chomp($line);
 
     $line =~ s/ +/ /g;
@@ -171,9 +135,8 @@ while (<$tmpout2>) {
     #this is still open question whether character '&' should be represented as  '&amp;' or '&' 
     $line =~ s/\&amp;/\&/g;
 
-    print STDOUT $line . "\n";
+    print $line,"\n";
 }
-close $tmpout2;
 
 #END OF MAIN PROGRAM
 
@@ -223,7 +186,7 @@ sub processNode {
         }
 
         #check whether the tag is correct InlineText tag
-        if ( !( $reader->name ~~ @InlineTexttags ) ) {
+	if ( $reader->name !~ /(g|x|bx|ex|lb|mrk)/  ) {
             print STDERR "Warning: input has not valid InlineText format!!\n" . "Problematic tag: <" . $reader->name . ">\nContinue...\n";
         }
 
@@ -468,7 +431,7 @@ XML::LibXML::Reader
 
 =head3 Author
 
-Tomáš Hudík, thudik@moraviaworldwide.com
+TomE<aacute>E<scaron> HudE<iacute>k, thudik@moraviaworldwide.com
 
 
 =head3 TODO:

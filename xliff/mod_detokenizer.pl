@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+$|++;
 
 #
 # Script mod_detokenizer.pl detokenizes data from Markup Reinserter; after 
@@ -27,7 +28,7 @@
 #
 
 use strict;
-use 5.10.0;
+#use 5.10.0;
 use File::Temp;
 use FindBin qw($Bin);
 
@@ -100,8 +101,9 @@ chomp($line);
 close($tmpout);
 
 #language should be one of:
-my @l = qw/en cs fr it/;
-if(!($lang ~~ @l)){
+#my @l = qw/en cs fr it/;
+#if(!($lang ~~ @l)){
+if($lang !~ /(en|cs|fr|it)/ ){
     print STDERR "WARNING: mod_detokenizer can't work with language: '$lang', falling back to 'en'\n";
     $lang = "en";
 }
@@ -141,7 +143,7 @@ detokenization rules written in nonbreaking_prefixes sub-directory.
 
 =head3 Author
 
-Tomáš Hudík, thudik@moraviaworldwide.com
+TomE<aacute>E<scaron> HudE<iacute>k, thudik@moraviaworldwide.com
 
 
 =head3 TODO:

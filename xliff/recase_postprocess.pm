@@ -1,4 +1,7 @@
 #!/usr/bin/perl -w
+package recase_postprocess;
+
+run() unless caller();
 
 #
 # Reinsert Moses traces (phrase alignment info) into recased Moses output
@@ -21,53 +24,64 @@
 
 use strict;
 
-binmode(STDIN,":utf8");
-binmode(STDOUT,":utf8");
+sub run {
+    binmode(STDIN,":utf8");
+    binmode(STDOUT,":utf8");
 
-if(@ARGV != 1) {
-    die "Usage: $0 <Moses output with traces> < <recased target file> > <recased target file with traces>\n";
-}
+    if(@ARGV != 1) {
+	die "Usage: $0 <Moses output with traces> < <recased target file> > <recased target file with traces>\n";
+    }
 
-open(my $ifh,"<:utf8",$ARGV[0]);
+    open(my $ifh,"<:utf8",$ARGV[0]);
 
-while(<$ifh>) {
-    chomp;
-    if(my $recased_target = <STDIN>) {
-	chomp $recased_target;
-	my @traced = split;
-	my @recased = split(' ',$recased_target);
-	my $recased_traced = "";
-	foreach my $traced_token (@traced) {
-	    if($traced_token =~ /\|\d+\-\d+\|/) {
-		$recased_traced .= $&." ";
-	    }
-	    else {
-		$recased_traced .= shift @recased;
-		$recased_traced .= " ";
-	    }
+    while(<$ifh>) {
+	chomp;
+	if(my $recased_target = <STDIN>) {
+	    chomp $recased_target;
+	    print retrace($_,$recased_target),"\n";
 	}
-	print $recased_traced,"\n";
+	else {
+	    die "Recased target file has fewer lines than Moses output file";
+	}
     }
-    else {
-	die "Recased target file has fewer lines than Moses output file";
-    }
+
+    close($ifh);
 }
 
-close($ifh);
+sub retrace {
+    my $traced = shift;
+    my $recased_target = shift;
+
+    my @traced = split (' ',$traced);
+    my @recased = split(' ',$recased_target);
+    my $recased_traced = "";
+    foreach my $traced_token (@traced) {
+	if($traced_token =~ /\|\d+\-\d+\|/) {
+	    $recased_traced .= $&." ";
+	}
+	else {
+	    $recased_traced .= shift @recased;
+	    $recased_traced .= " ";
+	}
+    }
+    return $recased_traced;
+}
+
+1;
 
 __END__
 
 =head1 NAME
 
-recase_postprocess.pl: Reinsert Moses traces into recased Moses output
+recase_postprocess.pm: Reinsert Moses traces into recased Moses output
 
 =head1 USAGE
 
-    perl recase_postprocess.pl lowercased_traced_target < recased_target > recased_traced_target
+    perl recase_postprocess.pm lowercased_traced_target < recased_target > recased_traced_target
 
 Script to reinsert Moses traces (phrase alignment info) into recased target
 language text. The traces are required to correctly reinsert formatting
-markup (e.g. XLIFF inline elements) with the script C<reinsert.pl>.
+markup (e.g. XLIFF inline elements) with the script C<reinsert.pm>.
 C<lowercased_traced_target> is the output of Moses with the
 C<-t> option. C<recased_target> is the output of a recasing model
 created with Moses (refer to the Moses documentation for further information).

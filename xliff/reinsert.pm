@@ -1,4 +1,6 @@
 #!/usr/bin/perl -w
+package reinsert;
+run() unless caller();
 
 #
 # Reinsertion of markup from source InlineText into plain text translated
@@ -24,39 +26,37 @@
 use strict;
 use Getopt::Std;
 
-binmode(STDIN,":utf8");
-binmode(STDOUT,":utf8");
+sub run {
+    binmode(STDIN,":utf8");
+    binmode(STDOUT,":utf8");
 
-#our $opt_a;
-#getopts("a");
-if(@ARGV != 1) {
-    die "Usage: perl $0 source_InlineText_file < traced_target > target_InlineText_file\n";
-}
-
-my $inline_tags = "(g|x|bx|ex|lb|mrk)";
-
-open(my $ifh,"<:utf8",$ARGV[0]);
-
-# Read line from InlineText file
-while(<$ifh>) {
-    my @elements = extract_inline($_);
-    if(my $traced_target = <STDIN>) {
-	print reinsert_elements($traced_target,@elements);
-	print "\n";
-	#print $traced_target;
+    if(@ARGV != 1) {
+	die "Usage: perl $0 source_InlineText_file < traced_target > target_InlineText_file\n";
     }
-    else {
-	die "Target file has fewer lines than source file";
-    }
-}
 
-close($ifh);
+    open(my $ifh,"<:utf8",$ARGV[0]);
+
+    # Read line from InlineText file
+    while(<$ifh>) {
+	my @elements = extract_inline($_);
+	if(my $traced_target = <STDIN>) {
+	    print reinsert_elements($traced_target,@elements);
+	    print "\n";
+	}
+	else {
+	    die "Target file has fewer lines than source file";
+	}
+    }
+
+    close($ifh);
+}
 
 sub extract_inline {
     my $inline = shift;
     my @elements;
     my $i = 0;
 
+    my $inline_tags = "(g|x|bx|ex|lb|mrk)";
     while($inline =~ /\G(.*?)<(\/?)$inline_tags(\s.*?)?>/g) {
 	my @tokens_before = split ' ',$1;
 	$i += @tokens_before;
@@ -162,16 +162,18 @@ sub reinsert_elements {
     return $target;
 }
 
+1;
+
 __END__
 
 =head1 NAME
 
-reinsert.pl: Reinsert markup from source InlineText into translation
+reinsert.pm: Reinsert markup from source InlineText into translation
 with Moses
 
 =head1 USAGE
 
-    perl reinsert.pl source_InlineText_file < traced_target > target_InlineText_file
+    perl reinsert.pm source_InlineText_file < traced_target > target_InlineText_file
 
 Script to reinsert markup from source InlineText into plain text Moses output
 with traces (traces are phrase alignment information). 
@@ -183,7 +185,7 @@ L<Okapi|http://okapi.opentag.com>.
 C<traced_target> is the output of the Moses decoder invoked with the C<-t> 
 option. When invoked with the C<-t> option, the Moses decoder outputs 
 phrase alignment information which indicates which source phrases where 
-translated with which target phrases. C<reinsert.pl> uses this information 
+translated with which target phrases. C<reinsert.pm> uses this information 
 to insert XLIFF inline elements roughly at the correct positions in 
 the target text.
 

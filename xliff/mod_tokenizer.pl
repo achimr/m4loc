@@ -36,6 +36,7 @@ use XML::LibXML::Reader;
 use FindBin qw($Bin);
 # Necessary for use in Unix pipe?
 autoflush STDIN;
+binmode(STDOUT,":utf8");
 
 #GLOBAL VARIABLES
 

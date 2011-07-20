@@ -37,6 +37,9 @@ use FindBin qw($Bin);
 # Necessary for use in Unix pipe?
 autoflush STDIN;
 binmode(STDOUT,":utf8");
+binmode(STDIN,":utf8");
+binmode(STDERR,":utf8");
+
 
 #GLOBAL VARIABLES
 

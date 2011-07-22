@@ -34,7 +34,8 @@ $|++;
 
 use warnings;
 use strict;
-#use IO::Handle;
+#use at least version 5.10 (or higher, due to ~~ operator)
+use 5.10.0;
 use XML::LibXML::Reader;
 use FindBin qw($Bin);
 use IPC::Run qw(start pump finish timeout);
@@ -357,6 +358,7 @@ WARNING: external tokenizer needs to:
 
 
 =head3 PREREQUISITES
+perl at least 5.10.0
 
 XML::LibXML::Reader
 

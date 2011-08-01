@@ -238,7 +238,7 @@ sub tokenize {
 
                 #badly created XLIFFes can contain hidden XML tags(e.g. &lt;...)
 		#don't tokenize these hidden XML tags (choose them from string and put to $tokenized untokenized)
-                my @btag = split( /(&\w+;\S*)/i, $arr[$i] );
+                my @btag = split( /(&\w{2,4};)/i, $arr[$i] );
                 for ( my $j = 0 ; $j <= $#btag ; $j++ ) {
 
 		#treating UNICODE numbers

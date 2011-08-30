@@ -91,6 +91,12 @@ chomp($line);
       $line =~ s/(\<\/(\w+|\s+))\>\s+/$1\>/g;
     }
 
+    #put back Moses' sensitive characters
+    $line =~ s/&#x5b;/\[/g;
+    $line =~ s/&#x5d;/\]/g;
+    $line =~ s/&#x7c;/\|/g;
+
+
      print($tmpout $line . "\n" );
 }
 

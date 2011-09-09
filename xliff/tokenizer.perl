@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+$|++;
 
 # $Id: tokenizer.perl 915 2009-08-10 08:15:49Z philipp $
 # Sample Tokenizer

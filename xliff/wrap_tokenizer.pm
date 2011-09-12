@@ -58,7 +58,7 @@ sub run {
     my $tok_param_str = "-l en -q";
 
     #program for tokenization. Default: Moses' tokenizer.perl
-    our $tok_program = "./tokenizer.perl";
+    our $tok_program = "$Bin/./tokenizer.perl";
 
     #string to be tokenized by tokenizer.perl
     our $str_tok = "";

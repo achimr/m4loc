@@ -55,7 +55,7 @@ binmode(STDERR,":utf8");
 my @tok_param = qw/ -l en -q/;
 
 #program for tokenization. Default: Moses' tokenizer.perl
-my $tok_program = "./tokenizer.perl"; 
+my $tok_program = "$Bin/./tokenizer.perl"; 
 
 #string to be tokenized by tokenizer.perl
 my $str_tok = "";

@@ -69,7 +69,7 @@ sub extract_inline {
 	else {
 	    # find the last corresponding opening tag in the list
 	    for (my $j = $#elements; $j >= 0; $j--) {
-		if($elements[$j]->{'el'} eq $3) {
+		if($elements[$j]->{'el'} eq $3 && exists($elements[$j]->{'s'})) {
 		    push @elements, {'el'=>$3,'e'=>$i-1,'txt'=>"</$tag_text>",'ot'=>$j};
 		    $elements[$j]->{'ct'} = $#elements;
 		    last;

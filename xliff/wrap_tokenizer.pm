@@ -180,6 +180,7 @@ sub processNode {
         return;
     }
 
+
     #if a node is a string -- add content to str_tok
     if ( $reader->name eq "#text" ) {
         my $node = $reader->preserveNode();
@@ -216,7 +217,7 @@ sub processNode {
         }
 
         #check whether the tag is correct InlineText tag
-        if ( $reader->name !~ /(g|x|bx|ex|lb|mrk)/ ) {
+        if ( $reader->name !~ /(g|x|bx|ex|lb|mrk|n)/ ) {
             print STDERR "Warning: input has not valid InlineText format!!\n"
               . "Problematic tag: <"
               . $reader->name
@@ -347,6 +348,11 @@ chunks. The tokenized chunks are further joined with untokenized ones (special
 Inlines, URL addresse, or poorly-created XLIFF
 strings) and print out as STDOUT.
 
+Inline text format (wrap_tokenizer's input) can consists of the following tags:
+C<g,x,bx,ex,lb,mrk,n>. Where C<g,x,bx,ex,lb,mrk> are XLIFF inline elements and
+C<n> can be used for being processed by Moses' -xml-input
+(L<http://www.statmt.org/moses/?n=Moses.AdvancedFeatures#ntoc4>).
+
 The script takes data from standard input, process it and the output is written
 to the standard output. Input and output are UTF-8 encoded data. 
 
@@ -355,7 +361,7 @@ is that mod_tokenizer is sticked exclusively to Moses' tokenizer.perl. However,
 for some languages (mainly East-asian) is better to use different tokenizer,
 which is not possible in mod_tokenizer. For more info on tokenizing and whole
 framework of XLIFF<->Moses is described in:
-http://www.mt-archive.info/EAMT-2011-Hudik.pdf
+L<http://www.mt-archive.info/EAMT-2011-Hudik.pdf>
 
 
 

@@ -33,7 +33,7 @@ sub run {
 	chomp;
 	if(my $sourceline = <$sfh>) {
 	    chomp $sourceline;
-	    print fix_whitespace($sourceline,$_);
+	    print fix_whitespace($sourceline,$_),"\n";
 	}
 	else {
 	    die "Source file and detokenized target file have differing number of lines";
@@ -50,8 +50,6 @@ sub fix_whitespace {
     my $target = shift;
 
     # Parse whitespace around tags in source and target
-    $DB::single = 2;
-    my $foo = 2;
     my @source_elements = extract_inline($source);
     my @target_elements = extract_inline($target);
 
@@ -79,7 +77,10 @@ sub fix_whitespace {
 	$remainder = $';
     }
     # Add remaining content to fixed target
-    $fixed .= $remainder."\n";
+    $fixed .= $remainder;
+
+    # If multiple spaces come together, reduce them to one
+    $fixed =~ s/\s\s+/ /g;
 
     return $fixed;
 

@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+$|++;
 
 #
 # Remove Moses traces (phrase alignment info) from translated text

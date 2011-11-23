@@ -39,7 +39,7 @@ sub decode_markup {
     my $source = shift;
 
     # TBD: This could also decode entities that were already encoded before the application of wrap_markup
-    return decode_entities($_);
+    return decode_entities($source);
 }
 
 1;

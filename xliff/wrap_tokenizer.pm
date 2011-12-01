@@ -98,9 +98,9 @@ sub run {
     if ( ( !$opt_status ) || ($HELP) ) {
         print "\n$0 converts InlineText into tokenized InlineText.\n";
         print "\nUSAGE: perl $0 [-t -p] < inFile > outFile\n";
-        print "\t -p tokenizer' options (default -p \"-l en -q\"\n";
+        print "\t -p tokenizer' options (default -p \"-l en -q\")\n";
         print "\t -t tokenizer - program; (default: -t \"perl tokenizer.perl\")\n";
-        print "\tinFile - InlinText file, output of Okapi Tikal (parameter -xm)\n";
+        print "\tinFile - InlineText file, output of Okapi Tikal (parameter -xm)\n";
         print "\toutFile - tokenized InlineText file, input for markup_remover\n";
         exit;
     }

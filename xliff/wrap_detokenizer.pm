@@ -116,6 +116,7 @@ sub run {
         $line =~ s/&#x5b;/\[/g;
         $line =~ s/&#x5d;/\]/g;
         $line =~ s/&#x7c;/\|/g;
+        $line =~ s/&amp;/&/g;
 
         print( $tmpout $line . "\n" );
     }

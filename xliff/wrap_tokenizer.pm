@@ -184,7 +184,10 @@ sub processNode {
     #if a node is a string -- add content to str_tok
     if ( $reader->name eq "#text" ) {
         my $node = $reader->preserveNode();
-        $m4loc::str_tok .= $node->toString();    #$reader->value;
+
+	#!!NOTE: if: $m4loc::str_tok .=#$reader->value; special strings are not treated correctly 
+        $m4loc::str_tok .= $node->toString();    
+	#$m4loc::str_tok .= $reader->value;
     }
 
     #if node is a start of some element
@@ -255,50 +258,51 @@ sub tokenize {
     my @lines = split( /\n/, $str );
     foreach my $lin (@lines) {
 
-        #check whether string contains some URL patterns
-        my @arr = split( /((http[s]?:\/\/|ftp[s]?:\/\/|www\.)\S+)/i, $lin );
 
-#necessary to employ special variable which is $i+1$, since it is needed to remove every third item, (e.g. 3,6), from regexp
-#with $i staring from 0 would be difficult
-        my $iter = 1;
-        for ( my $i = 0 ; $i <= $#arr ; $i++ ) {
+	### INSERT DATASET SPECIFIC RULES HERE ###########
+	#which strings should be replaced, or not tokenized
+	#e.g. replace:  $lin =~ s/&lt;&gt;/<>/g;
+	
+  
+	#URLs  - do not tokenize URLs
+	my (@url) = ($lin =~ /((https?:\/\/|ftps?:\/\/|www\.)\S+)/gi);
+      	#replace
+	$lin =~ s/(https?:\/\/|ftps?:\/\/|www\.)\S+/ \x{22D9} /gi;
 
-            #if second item in the regexp => insert not-tokenized URL
-            if ( ( $iter % 3 ) == 2 ) { $tokenized .= " $arr[$i] "; }
+	#ENT - do not tokenize XML entities 
+      	my (@ent) = ($lin =~ /&\w{2,4};/gi);
+	#replace
+	$lin =~ s/&\w{2,4};/ \x{29F2} /gi;
 
-            #if first item in the regexp =>
-            if ( ( $iter % 3 ) == 1 ) {
 
-#badly created XLIFFes can contain hidden XML tags(e.g. &lt;...)
-#don't tokenize these hidden XML tags (choose them from string and put to $tokenized untokenized)
-                my @btag = split( /(&\w{2,4};)/i, $arr[$i] );
-                for ( my $j = 0 ; $j <= $#btag ; $j++ ) {
 
-                    #treating UNICODE numbers
-                    $btag[$j] =~ s/(&amp;)( )(\#\w+;)/$1$3/g;
-                    $btag[$j] =~ s/(&amp;)( )(\#x\w+;)/$1$3/g;
+	#tokenization
+	my $tmp_tok = tokenize_str($lin);
 
-                    #insert not-tokenized btag
-                    if ( $j % 2 ) {
 
-                    #put space between the last hidden tag and the next standard character
-                    #$btag[$j] =~ s/(.*)(&\w+;)(.*)/$1$2 $3/g;
-                        $btag[$j] =~ s/(\w+;)(\w+)$/$1 $2/;
-                        $tokenized .= " $btag[$j] ";
-                        print STDERR
-"WARNING: incorrectly created original XLIFF. String: \"$btag[$j]\" should be wrapped in special tags.\n";
-                    }
-                    else {
+	#now (after tokenization) replace non-terminals back to non-tokenized strings
+	my $i;
 
-                        #insert tokenized rest of the line
-                        $tokenized .= tokenize_str( $btag[$j] );
+	#URL - replace non-terminal back into non-tokenized strings
+	for($i=0;$i<($#url+1);$i++){
+	    #note: "unless" clause takes places due to necessity filter out the innner bracket in theregexp
+	    $tmp_tok =~ s/\x{22D9}/$url[$i]/i unless $i%2;
+	}
 
-                        #chomp($tokenized);
-                    }
-                }
-            }
-            $iter++;
-        }
+
+	#ENT - replace non-terminal back into non-tokenized strings
+	for($i=0;$i<($#ent+1);$i++){
+          $tmp_tok =~ s/\x{29F2}/$ent[$i]/i;
+	}
+
+
+
+	###### END OF DATASET" SPECIFIC RULES #############
+	
+
+	
+	$tokenized .= $tmp_tok;
+
         $tokenized .= "\n";
     }
 
@@ -342,11 +346,16 @@ It takes input (line, or file) in InlineText format ( this format is tikal
 tokenized/segmented InlineText with untokenized XML/XLIFF tags and url addresses. 
 
 wrap_tokenizer.pm is a wrapper for some external tokenizer. It splits out input into
-different chunks. The chunks with plain text intended for translation are send
-to an external tokenizer and then, wrap_tokenizer waits for the tokenized
-chunks. The tokenized chunks are further joined with untokenized ones (special
-Inlines, URL addresse, or poorly-created XLIFF
-strings) and print out as STDOUT.
+different chunks. The chunks with plain text intended for translation are sent
+to an external tokenizer and then, wrap_tokenizer waits for the output (tokenized
+chunks). If dataset contain some strings which shouldn't be tokenized, an user
+can relatively seamlessly replace those strings into some non-terminal. Then,
+tokenization takes place. And finally, non-terminals are converted back into
+original form. For example, various URLs or special tags which are not
+correctly processed by a CAT tool, can be a subject of such transformation (e.g.
+URL->non_terminal->URL). Non-terminals are unicode characters which are not used
+anywhere in the dataset. By default, URLs and XML entities are treated this way.
+But many others can be added.
 
 Inline text format (wrap_tokenizer's input) can consists of the following tags:
 C<g,x,bx,ex,lb,mrk,n>. Where C<g,x,bx,ex,lb,mrk> are XLIFF inline elements and
@@ -406,3 +415,6 @@ Tomáš Hudík, thudik@moraviaworldwide.com
 
 2. which XML entities (< is &lt;, & is &amp;,...) should be in "normal" form(<) and which should be encoded (&amp;)
 
+3. rewrite script in order to avoid global variables
+
+4. improve documentation

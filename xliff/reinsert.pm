@@ -173,12 +173,12 @@ with Moses
 
 =head1 USAGE
 
-    perl reinsert.pm source_InlineText_file < traced_target > target_InlineText_file
+    perl reinsert.pm source_tokenized_InlineText_file < traced_target > target_tokenized_InlineText_file
 
 Script to reinsert markup from source InlineText into plain text Moses output
 with traces (traces are phrase alignment information). 
 
-C<source_InlineText_file> is expected to be a tokenized version of the 
+C<source_tokenized_InlineText_file> is expected to be a tokenized version of the 
 InlineText file format output by the Moses Text Filter of 
 L<Okapi|http://okapi.opentag.com>. 
 
@@ -188,6 +188,10 @@ phrase alignment information which indicates which source phrases where
 translated with which target phrases. C<reinsert.pm> uses this information 
 to insert XLIFF inline elements roughly at the correct positions in 
 the target text.
+
+The output C<target_tokenized_InlineText_file> is a tokenized version of the
+target text with XLIFF inline elements inserted. Detokenization still needs
+to be applied where appropriate.
 
 The script follows these principles when reinserting inline elements:
 

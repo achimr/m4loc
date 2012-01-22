@@ -1,9 +1,8 @@
 #!/usr/bin/perl -w
-$|++;
 
-package m4loc;
+package wrap_tokenizer;
 
-run() unless caller();
+__PACKAGE__->run(@ARGV) unless caller();
 
 #
 # Script wrap_tokenizer.pm takes input (line - STDIN, or file) split it into
@@ -47,39 +46,24 @@ use IPC::Run qw(start pump finish timeout);
 use Encode;
 use Getopt::Long;
 
-sub run {
+#use diagnostics;
 
-    #GLOBAL VARIABLES
+sub run {
+    ref( my $class = shift ) and die "Class name needed";
+
+    $|++;
 
     #parameters for tokenizer
-    our @tok_param;
+    my @tok_param;
 
     #tmp parameters for tokenizer
     my $tok_param_str = "-l en -q";
 
     #program for tokenization. Default: Moses' tokenizer.perl
-    our $tok_program = "$Bin/./tokenizer.perl";
-
-    #string to be tokenized by tokenizer.perl
-    our $str_tok = "";
-
-    #string with xml tags (which won't be tokenized)
-    our $str_tag = "";
-
-    #output string - it is a combination(merger) of $str_tok and $str_tag
-    our $str_out = "";
-
-    #defining pipe(IPC::Run) for the external tokenizer
-    our ( $TOK_IN, $TOK_OUT, $TOK_ERR, $TOK );
-
-    my $tmp;
+    my $tok_program = "$Bin/./tokenizer.perl";
 
     #print out help info if some incorrect options has been inserted
     my $HELP = 0;
-
-    #END OF GLOBAL VARIABLES
-
-    #MAIN PROGRAM
 
     # !!!Be carefull: important for line-based approach, however, it is causing
     # useless delays in file-based (batch) approach
@@ -108,149 +92,185 @@ sub run {
     #convert tok_param_str into array
     @tok_param = split( / /, $tok_param_str ) if length $tok_param_str;
 
-    $TOK = start [ $tok_program, @tok_param ], '<', \$TOK_IN, '1>pty>', \$TOK_OUT, '2>',
-      \$TOK_ERR, debug => 0
-      or die "Can't exec tokenizer program: $?;\n";
+    my $pokus = $class->new( $tok_program, @tok_param );
 
     my $line;
     while ( $line = <STDIN> ) {
-        $str_out = "";
-        chomp($line);
 
-        my $inline_xml =
-"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<InlineText xml:space=\"preserve\">";
-
-        #extra whitespace and new line added (white space - solve URL\n case; URL \n
-        #is OK, however URL\n would cause leave one line out)
-        $inline_xml .= $line . " \n</InlineText>";
-
-        #process $inline_xml(now is valid xml documnet) with LibXML::Reader
-        my $reader = new XML::LibXML::Reader( string => $inline_xml );
-
-        #read XML nodes
-        while ( eval { $reader->read } ) {
-
-            # AR bad: this subroutine modifies the global $str_out
-            processNode($reader);
-        }
-
-        if ($@) {
-            warn $line, "\n", $@;
-            print "-1\n";
-            next;
-        }
-
-        #tokenize remaining str_tok if any
-        if ( length($str_tok) > 0 ) {
-            $str_out .= " " . tokenize($str_tok);
-            $str_tok = "";
-        }
-
-#clean extra spaces and substitute special characters ([,],|;<> are solved already) that can't be given as Moses input.
-        my $line = $str_out;
-        chomp($line);
-
-        $line =~ s/\s+/ /g;
-        $line =~ s/^ //;
-        $line =~ s/ $//;
-        $line =~ s/\[/&#x5b;/g;
-        $line =~ s/\]/&#x5d;/g;
-        $line =~ s/\|/&#x7c;/g;
-
-#this is still open question whether character '&' should be represented as  '&amp;' or '&'
-        $line =~ s/\&amp;/\&/g;
-
-        print STDOUT $line, "\n";
+        my $output = $pokus->processLine($line );
+        print STDOUT "$output\n";
     }
 
-    finish($TOK) or die "$tok_program returned $?";
+}    #sub run
+
+sub new {
+    ref( my $class = shift ) and die "Class name needed";
+    my $tok_program = shift;
+    my @tok_param   = @_;
+
+    #defining pipe(IPC::Run) for the external tokenizer
+    my ( $TOK_IN, $TOK_OUT, $TOK_ERR, $TOK );
+
+    my %self = (
+        tok         => $TOK,
+        tok_in      => $TOK_IN,
+        tok_out     => $TOK_OUT,
+        tok_err     => $TOK_ERR,
+        tok_program => $tok_program
+    );
+
+    $self{tok} = start [ $tok_program, @tok_param ], '<', \$self{tok_in}, '1>pty>',
+      \$self{tok_out}, '2>', \$self{tok_err}, debug => 0
+      or die "Can't exec tokenizer program: $?;\n";
+
+    bless \%self, $class;
+    return \%self;
 
 }
 
-#END OF MAIN PROGRAM
+sub DESTROY {
+    my $self = shift;
+    finish( $self->{tok} ) or die "Program: " . $self->{tok_program} . " returned $?";
+}
 
-#FUNCTIONS---------------------------------------------------------------------------------------------
+sub processLine {
+    my $self       = shift;
+    my $line       = shift;
+    chomp($line);
+    my $inline_xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<InlineText
+xml:space=\"preserve\">" . $line . " </InlineText>";
+
+    #process $inline_xml(now is valid xml documnet) with LibXML::Reader
+    my $reader = new XML::LibXML::Reader( string => $inline_xml );
+
+    my $tmp = "";
+
+    #read XML nodes
+    while ( eval { $reader->read } ) {
+
+        $tmp .= $self->processNode($reader );
+    }
+
+    if ($@) {
+        warn $line, "\n", $@;
+        print "-1\n";
+        next;
+    }
+
+#clean extra spaces and substitute special characters ([,],|;<> ) that can't be given as Moses input.
+    $line = $tmp;    #$m4loc::str_out;
+    chomp($line);
+
+    $line =~ s/\s+/ /g;
+    $line =~ s/^ //;
+    $line =~ s/ $//;
+    $line =~ s/\[/&#x5b;/g;
+    $line =~ s/\]/&#x5d;/g;
+    $line =~ s/\|/&#x7c;/g;
+
+#this is still open question whether character '&' should be represented as  '&amp;' or '&'
+    $line =~ s/\&amp;/\&/g;
+    return $line;
+}
 
 #XML's nodes proccessing
 sub processNode {
+    my $self = shift;
     my $reader = shift;
 
-    #don't process top element (xliff_inLines)
+    # function result
+    my $result = "";
+
+    #temporal string which will undergo tokenize() (is not yet tokenized)
+    my $tok = "";
+
+    #temporal string which won't be tokenized (because it is tag, or parameter)
+    my $tag = "";
+
+    #don't process top element (InlineText)
     if ( $reader->name eq "InlineText" ) {
-        return;
+        return $result;
     }
 
-
-    #if a node is a string -- add content to str_tok
+    #if a node is a string -- add content to $tok
     if ( $reader->name eq "#text" ) {
         my $node = $reader->preserveNode();
 
-	#!!NOTE: if: $m4loc::str_tok .=#$reader->value; special strings are not treated correctly 
-        $m4loc::str_tok .= $node->toString();    
-	#$m4loc::str_tok .= $reader->value;
+        #!!NOTE: if: $tok .=#$reader->value; special strings are not treated correctly
+        $tok .= $node->toString();
+
+        #$tok .= $reader->value;
     }
 
     #if node is a start of some element
     if ( $reader->nodeType == 1 ) {
-        $m4loc::str_tag .= "<" . $reader->name;
+        $tag .= "<" . $reader->name;
 
         #read and add attributes, if any
         if ( $reader->moveToFirstAttribute ) {
             do {
                 {
-                    $m4loc::str_tag .=
-                      " " . $reader->name() . "=\"" . $reader->value . "\"";
+                    $tag .= " " . $reader->name() . "=\"" . $reader->value . "\"";
+
                 }
             } while ( $reader->moveToNextAttribute );
             $reader->moveToElement;
         }
 
-        #if str_tok is not empty,tokenize and put it to the output string
-        if ( length($m4loc::str_tok) > 0 ) {
-            $m4loc::str_out .= " " . tokenize($m4loc::str_tok) . " ";
-            $m4loc::str_tok = "";
+        #if tok is not empty,tokenize and put it to the output string
+        if ( length($tok) > 0 ) {
+            $result .= " " . $self->tokenize($tok) . " ";
+            $tok = "";
         }
 
         #if is empty node (e.g. <a/>) add closing bracket and return
-        #there is no string for tokenization (str_tok should be empty)
+        #there is no string for tokenization ($tok should be empty)
         if ( $reader->isEmptyElement ) {
-            $m4loc::str_out .= $m4loc::str_tag . "/>";
-            $m4loc::str_tag = "";
-            return;
+            $result .= $tag . "/>";
+            $tag = "";
+            return $result;
         }
 
         #check whether the tag is correct InlineText tag
         if ( $reader->name !~ /(g|x|bx|ex|lb|mrk|n)/ ) {
-            print STDERR "Warning: input has not valid InlineText format!!\n"
+            print STDERR "Warning: input is non-valid InlineText format!!\n"
               . "Problematic tag: <"
               . $reader->name
               . ">\nContinue...\n";
         }
 
         #add starting tag
-        $m4loc::str_out .= $m4loc::str_tag . ">";
-        $m4loc::str_tag = "";
+        $result .= $tag . ">";
+        $tag = "";
     }
 
     #if node is an end of some element
     if ( $reader->nodeType == 15 ) {
 
-        #tokenize str_tok if any
-        if ( length($m4loc::str_tok) > 0 ) {
+        #tokenize $tok if any
+        if ( length($tok) > 0 ) {
 
             #add it to the output string
-            $m4loc::str_out .= " " . tokenize($m4loc::str_tok) . " ";
-            $m4loc::str_tok = "";
+            $result .= " " . $self->tokenize($tok) . " ";
+            $tok = "";
         }
 
         #add closing element tag
-        $m4loc::str_out .= "</" . $reader->name . ">";
+        $result .= "</" . $reader->name . ">";
     }
 
-}
+    if ( length($tok) > 0 ) {
+        $result .= " " . $self->tokenize($tok) . " ";
+    }
 
-#tokenize $str_tok and write it to $str_out (do not tokenize URL addresses)
+    return $result;
+
+}    #processNode()
+
+#tokenize $str and write it to $str_out (do not tokenize special strings
+#specified by an user)
 sub tokenize {
+    my $self = shift;
     my $str       = shift;
     my $tokenized = "";
 
@@ -258,50 +278,53 @@ sub tokenize {
     my @lines = split( /\n/, $str );
     foreach my $lin (@lines) {
 
-
-	### INSERT DATASET SPECIFIC RULES HERE ###########
-	#which strings should be replaced, or not tokenized
-	#e.g. replace:  $lin =~ s/&lt;&gt;/<>/g;
-	
-  
-	#URLs  - do not tokenize URLs
-	my (@url) = ($lin =~ /((https?:\/\/|ftps?:\/\/|www\.)\S+)/gi);
-      	#replace
-	$lin =~ s/(https?:\/\/|ftps?:\/\/|www\.)\S+/ \x{22D9} /gi;
-
-	#ENT - do not tokenize XML entities 
-      	my (@ent) = ($lin =~ /&\w{2,4};/gi);
-	#replace
-	$lin =~ s/&\w{2,4};/ \x{29F2} /gi;
+        ###############################################################
+	######### INSERT DATASET SPECIFIC RULES HERE ##################
+        #which strings should be replaced, or not tokenized
+        #e.g. replace:  $lin =~ s/&lt;&gt;/<>/g;
+	###############################################################
 
 
+        #URLs  - do not tokenize URLs
+        my (@url) = ( $lin =~ /((https?:\/\/|ftps?:\/\/|www\.)\S+)/gi );
 
+        #replace
+        $lin =~ s/(https?:\/\/|ftps?:\/\/|www\.)\S+/ \x{22D9} /gi;
+
+        #ENT - do not tokenize XML entities
+        my (@ent) = ( $lin =~ /&\w{2,4};/gi );
+
+        #replace
+        $lin =~ s/&\w{2,4};/ \x{29F2} /gi;
+
+        ###############################################################
 	#tokenization
-	my $tmp_tok = tokenize_str($lin);
-
-
-	#now (after tokenization) replace non-terminals back to non-tokenized strings
-	my $i;
-
-	#URL - replace non-terminal back into non-tokenized strings
-	for($i=0;$i<($#url+1);$i++){
-	    #note: "unless" clause takes places due to necessity filter out the innner bracket in theregexp
-	    $tmp_tok =~ s/\x{22D9}/$url[$i]/i unless $i%2;
-	}
-
-
-	#ENT - replace non-terminal back into non-tokenized strings
-	for($i=0;$i<($#ent+1);$i++){
-          $tmp_tok =~ s/\x{29F2}/$ent[$i]/i;
-	}
+        my $tmp_tok = $self->tokenize_str($lin );
 
 
 
-	###### END OF DATASET" SPECIFIC RULES #############
-	
+	################################################################
+        #after tokenization, replace non-terminals back to non-tokenized strings
+        my $i;
 
-	
-	$tokenized .= $tmp_tok;
+        #URL - replace non-terminal back into non-tokenized strings
+        for ( $i = 0 ; $i < ( $#url + 1 ) ; $i++ ) {
+
+	#note: "unless" clause takes places due to necessity filter out the innner bracket in theregexp
+            $tmp_tok =~ s/\x{22D9}/$url[$i]/i unless $i % 2;
+        }
+
+        #ENT - replace non-terminal back into non-tokenized strings
+        for ( $i = 0 ; $i < ( $#ent + 1 ) ; $i++ ) {
+            $tmp_tok =~ s/\x{29F2}/$ent[$i]/i;
+        }
+
+
+	################################################################
+        ############ END OF DATASET" SPECIFIC RULES ####################
+	################################################################
+
+        $tokenized .= $tmp_tok;
 
         $tokenized .= "\n";
     }
@@ -312,19 +335,26 @@ sub tokenize {
     return $tokenized;
 }
 
+
 #tokenize string (call external tokenizer and receive its output)
 sub tokenize_str {
-    my ($text) = @_;
-    $m4loc::TOK_IN = $text . "\n";
-    pump $m4loc::TOK while $m4loc::TOK_OUT !~ /\n\z/;
+    my $self = shift;    
+    my $text = shift;
 
-    $text           = $m4loc::TOK_OUT;
-    $m4loc::TOK_OUT = '';
+    $self->{tok_in} = $text . "\n";
+
+    pump $self->{tok} while $self->{tok_out} !~ /\n\z/;    
+
+    $text = $self->{tok_out};
+    $self->{tok_out} = '';
 
     #check for STDERR from the tokenizer
-    if ( length($m4loc::TOK_ERR) > 0 ) {
-        print STDERR "$m4loc::tok_program:$m4loc::TOK_ERR\n";
-        $m4loc::TOK_ERR = '';
+    if ( length($self->{tok_err} ) > 0 ) {
+        print STDERR "Problem :"
+          . $self->{tok_err}
+          . " in program \""
+          . $self->{tok_program} . "\"\n";
+        $self->{tok_err} = '';
     }
 
     #almost equivalent to chomp - however \r differs
@@ -333,6 +363,7 @@ sub tokenize_str {
     return $text;
 }
 
+1;
 __END__
 
 

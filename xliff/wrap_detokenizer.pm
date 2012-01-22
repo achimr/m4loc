@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 
-package m4loc;
+package wrap_detokenizer;
 
-run() unless caller();
+__PACKAGE__->run(@ARGV) unless caller();
 
 #
 # Script wrap_detokenizer.pl detokenizes data from Markup Reinserter; after
@@ -30,6 +30,7 @@ run() unless caller();
 #
 #
 
+use warnings;
 use strict;
 use 5.10.0;
 use File::Temp;
@@ -37,24 +38,18 @@ use FindBin qw($Bin);
 use Getopt::Long;
 
 sub run {
+    ref(my $class= shift) and die "Class name needed";
+    $|++;
 
-    #GLOBAL VARIABLES
 
     #tmp parameters for detokenizer
     my $detok_param_str = "-l en -q";
 
     #program for detokenization. Default: Moses' tokenizer.perl
-    our $detok_program = "$Bin/./detokenizer.perl";
+    my $detok_program = "$Bin/./detokenizer.perl";
 
     #print out help info if some incorrect options has been inserted
     my $HELP = 0;
-
-    #defining pipe(IPC::Run) for the external tokenizer
-    our ( $DETOK_IN, $DETOK_OUT, $DETOK_ERR, $DETOK );
-
-    #END OF GLOBAL VARIABLES
-
-    #MAIN PROGRAM
 
     # !!!Be carefull: important for line-based approach, however, it is causing
     # useless delays in file-based (batch) approach
@@ -81,23 +76,53 @@ sub run {
     }
 
 
+    my $pokus = $class->new($detok_program,$detok_param_str);
+
 
     my $line;
-
-    #create tmp file for storing encapsulated inLineText data (output of tikal -xm)
-    my $tmpout = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => "1" );
-
-    #for QA only
-    my $str = "";
 
     #read and process STDIN
     while ( $line = <STDIN> ) {
         chomp($line);
+        $pokus->process_line($line);
+    }
 
-        #for QA only
-        #$str .= $line."\n";
+    close($pokus->{tmpout});
 
-        #insert space before < tag if is not already
+    print $pokus->detok();
+}
+
+sub new {
+   ref(my $class= shift) and die "Class name needed";
+   my $detok_program = shift;
+   my $detok_param_str = shift;
+
+  die "$class\->new(program, parameters); detokenizer program and parameters have to be specified!" 
+    unless defined($detok_program) and defined($detok_param_str);
+
+
+     #defining pipe(IPC::Run) for the external tokenizer
+#    our ( $DETOK_IN, $DETOK_OUT, $DETOK_ERR, $DETOK );
+
+
+   #create tmp file for storing encapsulated inLineText data (output of tikal -xm)
+    my $tmpout = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => "0" );
+
+    my $self = {detok_program => $detok_program, detok_param_str => $detok_param_str, tmpout => $tmpout};
+    bless $self, $class;
+    return $self;
+}
+
+sub DESTROY{
+    my $self = shift;
+   unlink($self->{tmpout});
+}
+
+sub process_line{
+    my $self = shift;
+    my $line = shift;
+
+	#insert space before < tag if is not already
         if ( $line =~ /\S\<(?!\/)/ ) {
             $line =~ s/(\S)\<(?!\/)/$1 \</g;
         }
@@ -118,22 +143,25 @@ sub run {
         $line =~ s/&#x7c;/\|/g;
         $line =~ s/&amp;/&/g;
 
-        print( $tmpout $line . "\n" );
-    }
+   print {$self->{tmpout} } $line;
+}
 
-    close($tmpout);
+sub detok{
+    my $self = shift;
 
     #if tokenizer is Moses' default, it can work only with a few languages!!!
     my $lang;
-    ($lang) = ($detok_param_str =~ /\-l (\S+)/p);
-    if (($detok_program =~ /detokenizer\.perl/)&&( $lang !~ /(en|cs|fr|it)/ )) {
-        print STDERR "WARNING: Moses detokenizer can work only with en, cs, fr and it languages, not with $lang\n";
+    ($lang) = ($self->{detok_param_str} =~ /\-l (\S+)/p);
+    if (($self->{detok_program} =~ /detokenizer\.perl/)&&( $lang !~ /(en|cs|fr|it)/ )) {
+
+
+       print STDERR "WARNING: Moses detokenizer can work only with en, cs, fr and it languages, not with $lang\n";
     }
 
-  system("perl $detok_program $detok_param_str < $tmpout");
+#  system("perl $self->{detok_program} $self->{detok_param_str} < $self->{tmpout}");
+return `perl $self->{detok_program} $self->{detok_param_str} < $self->{tmpout}`;
 
-
-}    #sub
+} 
 
 __END__
 

@@ -29,7 +29,10 @@ use Getopt::Long;
 use remove_markup;
 use wrap_tokenizer;
 use wrap_detokenizer;
+use recase_preprocess;
+use recase_postprocess;
 use reinsert;
+
 
 
     #source language
@@ -47,6 +50,11 @@ use reinsert;
     #moses
     my $moses_prog = "./moses";
     my $moses_param = "-f moses.ini -t";
+
+    #truecasing program
+    my $truecase_prog = "./moses";
+    my $truecase_param = "-f moses.ini";
+
 
     #tokenizer program
     my $detok_prog = "./detokenizer.perl";
@@ -101,20 +109,24 @@ while(my $line = <STDIN>){
     my $lower = lc($rem);
 
 
-    #moses
-    my $tmp="cat 7.mos | $moses_prog $moses_param";
+    #moses - BE CAREFUL - USER OWN WAY OF CALLING MOSES HAS TO BE SET UP!!!
+    #ECHO IS NOT GOOD FUNCTION SINCE INPUT CAN'T CONTAIN ' CHAR
+    my $tmp="echo '$lower' | $moses_prog $moses_param";
     my $moses = `$tmp`;
 
+    #truecasing
+    my $truecasing_pre = recase_preprocess::remove_trace($moses);
+    #moses trucaser - BE CAREFUL - USER OWN WAY OF CALLING MOSES HAS TO BE SET UP!!!
+    #ECHO IS NOT GOOD FUNCTION SINCE INPUT CAN'T CONTAIN ' CHAR   
+    $tmp="echo '$truecasing_pre' | $truecase_prog $truecase_param";
+    my $truecasing = `$tmp`;
+    my $truecasing_post = recase_postprocess::retrace($moses, $truecasing);
 
     #reinsert
     my @elements = reinsert::extract_inline($tok);
-    my $reins  = reinsert::reinsert_elements($moses,@elements);
-
-    #truecasing
-   
+    my $reins  = reinsert::reinsert_elements($truecasing_post,@elements);
 
     #detokenization
-
     $detokenizer->processLine($reins);
     my $detok = $detokenizer->detok();
 

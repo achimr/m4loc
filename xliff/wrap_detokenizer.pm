@@ -84,7 +84,7 @@ sub run {
     #read and process STDIN
     while ( $line = <STDIN> ) {
         chomp($line);
-        $pokus->process_line($line);
+        $pokus->processLine($line);
     }
 
     close($pokus->{tmpout});
@@ -118,7 +118,7 @@ sub DESTROY{
    unlink($self->{tmpout});
 }
 
-sub process_line{
+sub processLine{
     my $self = shift;
     my $line = shift;
 

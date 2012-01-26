@@ -7,7 +7,7 @@ run() unless caller();
 # with Moses, output and input are expected to be UTF-8 encoded 
 # (without leading byte-order mark)
 #
-# Copyright 2011 Digital Silk Road
+# Copyright 2011-2012 Digital Silk Road
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -31,7 +31,7 @@ sub run {
     binmode(STDOUT,":utf8");
 
     if(@ARGV != 1) {
-	die "Usage: perl $0 source_InlineText_file < traced_target > target_InlineText_file\n";
+	die "Usage: perl $0 source_tokenized_InlineText_file < traced_target > target_InlineText_file\n";
     }
 
     open(my $ifh,"<:utf8",$ARGV[0]);
@@ -59,7 +59,8 @@ sub extract_inline {
     my $inline_tags = "(g|x|bx|ex|lb|mrk)";
     while($inline =~ /\G(.*?)<(\/?)$inline_tags(\s.*?)?>/g) {
 	my @tokens_before = split ' ',$1;
-	$i += @tokens_before;
+	my $num_tokens = scalar(@tokens_before);
+	$i += $num_tokens;
 	my $tag_text = defined $4 ? $3.$4 : $3;
 	# opening or isolated tags
 	if($2 ne '/') {
@@ -70,7 +71,7 @@ sub extract_inline {
 	    # find the last corresponding opening tag in the list
 	    for (my $j = $#elements; $j >= 0; $j--) {
 		if($elements[$j]->{'el'} eq $3 && exists($elements[$j]->{'s'})) {
-		    push @elements, {'el'=>$3,'e'=>$i-1,'txt'=>"</$tag_text>",'ot'=>$j};
+		    push @elements, {'el'=>$3,'e'=>$i-1,'txt'=>"</$tag_text>",'ot'=>$j,'gap'=>$num_tokens};
 		    $elements[$j]->{'ct'} = $#elements;
 		    last;
 		}
@@ -127,18 +128,22 @@ sub reinsert_elements {
 	    }
 	}
 
-	# Append the target text
-	$target .= "$1 ";
-
 	# Only closing trace elements are left, add them if the tags are currently open
 	# Determine the deepest tag that needs to be closed in the cur_open stack
 	my ($deepest) = grep($trace_elem{$elements[$_]->{ct}},@cur_open);
 	# Close all elements on the cur_open stack up to the deepest
+	my $closing_before = "";
+	my $closing_after = "";
 	if(defined $deepest) {
 	    my $ot;
 	    while(defined($ot = pop @cur_open)) {
 		my $ct = $elements[$ot]->{ct};
-		$target .= $elements[$ct]->{txt}." ";
+		if($elements[$ct]->{gap}) {
+		    $closing_after .= $elements[$ct]->{txt}." ";
+		}
+		else {
+		    $closing_before .= $elements[$ct]->{txt}." ";
+		}
 		$added{$ot} = 1;
 		$added{$ct} = 1;
 		if(exists $trace_elem{$ct}) {
@@ -149,6 +154,9 @@ sub reinsert_elements {
 		}
 	    }
 	}
+
+	# Append the tags closing before, the target text and the tags closing after
+	$target .= $closing_before."$1 ".$closing_after;
 
 	# Store remaining closing tags in a hash
 	@pending_close{ keys %trace_elem } = values %trace_elem;

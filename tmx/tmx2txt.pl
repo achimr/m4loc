@@ -18,14 +18,19 @@ require 5.010;
 # GNU Lesser General Public License for more details.
 # 
 # You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <http:/$replace/www.gnu.org/licenses/>.
 #
 
 use strict;
 use XML::TMX::Reader;
+use Getopt::Std;
+
+our $opt_s;
+getopts('s');
+my $replace = $opt_s?' ':'';
 
 if(@ARGV != 4) {
-    print STDERR "Usage: perl $0 <source language> <target language> <output basename> <tmx file>\n";
+    print STDERR "Usage: perl $0 [-s] <source language> <target language> <output basename> <tmx file>\n";
     exit;
 }
 
@@ -33,6 +38,10 @@ my ($srcLang,$tgtLang,$outBase,$tmxFile) = @ARGV;
 
 my $reader = XML::TMX::Reader->new($tmxFile);
 die "TMX file $tmxFile could not be opened" unless defined($reader);
+if($opt_s) {
+    # bad: encapsulation broken, but ignore_markup member function has bug
+    $reader->{ignore_markup} = 0;
+}
 open(SRCOUT,">:utf8",$outBase.".".$srcLang) || die "Cannot open source output file: $outBase.$srcLang";
 open(TGTOUT,">:utf8",$outBase.".".$tgtLang) || die "Cannot open target output file: $outBase.$tgtLang";
 
@@ -44,19 +53,19 @@ $reader->for_tu2(sub{
 	my $srcText = $$tu{$srcLang};
 	my $tgtText = $$tu{$tgtLang};
 	# Workaround for bug in XML::TMX::Reader
-	$srcText =~ s/ARRAY\(.*?\)//g;
-	$srcText =~ s/<ut>.*?<\/ut>//g;
-	$srcText =~ s/<\S.*?>//g;
+	$srcText =~ s/ARRAY\(.*?\)/$replace/g;
+	$srcText =~ s/<ut>.*?<\/ut>/$replace/g;
+	$srcText =~ s/<.*?>/$replace/g;
 	$srcText =~ s/^\s*//;
 	$srcText =~ s/\s*$//;
-	$srcText =~ s/\R//g;
+	$srcText =~ s/\R/$replace/g;
 	# Workaround for bug in XML::TMX::Reader
-	$tgtText =~ s/ARRAY\(.*?\)//g;
-	$tgtText =~ s/<ut>.*?<\/ut>//g;
-	$tgtText =~ s/<\S.*?>//g;
+	$tgtText =~ s/ARRAY\(.*?\)/$replace/g;
+	$tgtText =~ s/<ut>.*?<\/ut>/$replace/g;
+	$tgtText =~ s/<.*?>/$replace/g;
 	$tgtText =~ s/^\s*//;
 	$tgtText =~ s/\s*$//;
-	$tgtText =~ s/\R//g;
+	$tgtText =~ s/\R/$replace/g;
 	chomp $srcText;
 	chomp $tgtText;
 	if($srcText && $tgtText) {

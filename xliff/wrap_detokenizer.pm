@@ -155,7 +155,7 @@ sub detok{
     if (($self->{detok_program} =~ /detokenizer\.perl/)&&( $lang !~ /(en|cs|fr|it)/ )) {
 
 
-       print STDERR "WARNING: Moses detokenizer can work only with en, cs, fr and it languages, not with $lang\n";
+       warn "WARNING: Moses detokenizer can work only with en, cs, fr and it languages, not with $lang\n";
     }
 
 #  system("perl $self->{detok_program} $self->{detok_param_str} < $self->{tmpout}");

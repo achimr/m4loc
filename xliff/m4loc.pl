@@ -42,7 +42,7 @@ use reinsert;
     my $tl = "de";
 
     #tokenizer program
-    my $tok_prog = "./tokenizer.perl";
+    my $tok_prog = "perl tokenizer.pm";
 
     #tokenizer parameters
     my @tok_param;
@@ -57,7 +57,7 @@ use reinsert;
 
 
     #tokenizer program
-    my $detok_prog = "./detokenizer.perl";
+    my $detok_prog = "perl detokenizer.pm";
 
     #tokenizer parameters
     my @detok_param;

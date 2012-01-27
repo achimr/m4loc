@@ -233,7 +233,7 @@ sub processNode {
 
         #check whether the tag is correct InlineText tag
         if ( $reader->name !~ /(g|x|bx|ex|lb|mrk|n)/ ) {
-            print STDERR "Warning: input is non-valid InlineText format!!\n"
+            warn "Warning: input is non-valid InlineText format!!\n"
               . "Problematic tag: <"
               . $reader->name
               . ">\nContinue...\n";
@@ -350,10 +350,7 @@ sub tokenize_str {
 
     #check for STDERR from the tokenizer
     if ( length($self->{tok_err} ) > 0 ) {
-        print STDERR "Problem :"
-          . $self->{tok_err}
-          . " in program \""
-          . $self->{tok_program} . "\"\n";
+        warn "Problem :". $self->{tok_err}. " in program \"". $self->{tok_program} . "\"\n";
         $self->{tok_err} = '';
     }
 

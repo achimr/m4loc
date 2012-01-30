@@ -31,6 +31,7 @@ use wrap_tokenizer;
 use wrap_detokenizer;
 use recase_preprocess;
 use recase_postprocess;
+use fix_markup_ws;
 use reinsert;
 
 
@@ -98,11 +99,11 @@ my $detokenizer = new wrap_detokenizer($detok_prog, "-l $tl -q");
 
 
 
-while(my $line = <STDIN>){
-    chomp($line);
+while(my $source = <STDIN>){
+    chomp($source);
 
     #tokenization
-    my $tok = $tokenizer->processLine($line);
+    my $tok = $tokenizer->processLine($source);
     my $rem = remove_markup::remove("",$tok);
 
     #lowercasing
@@ -130,7 +131,10 @@ while(my $line = <STDIN>){
     $detokenizer->processLine($reins);
     my $detok = $detokenizer->detok();
 
-   print "$detok\n";
+    #fix whitespaces around tags
+    my $fix = fix_markup_ws::fix_whitespace($source, $detok);
+
+   print "$fix\n";
 
 }
 

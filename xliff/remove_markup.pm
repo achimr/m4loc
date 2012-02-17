@@ -50,6 +50,8 @@ sub remove {
 
     $tok_source =~ s/$regex//g;
     $tok_source =~ s/\s\s+/ /g;
+    $tok_source =~ s/^\s+//;
+    $tok_source =~ s/\s+$//;
 
     return $tok_source;
 }

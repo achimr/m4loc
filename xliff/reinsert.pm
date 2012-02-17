@@ -167,6 +167,7 @@ sub reinsert_elements {
 	$target .= $elements[$i]->{txt}." ";
     }
 
+    $target =~ s/\s$//;
     return $target;
 }
 

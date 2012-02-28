@@ -5,7 +5,7 @@ $|++;
 #
 # Script to convert XLIFF file into input file for Moses
 #
-# Copyright 2012 Moravia Worldwide (xhudik@gmail.com)
+# Copyright 2011-2012 Moravia Worldwide (xhudik@gmail.com)
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -21,10 +21,11 @@ $|++;
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Usage: xliff2moses.pl  -sl en -tl de <Inline_source >Inline_target
+# Usage: m4loc.pl  -sl en -tl de -i file.tmx
 
 use warnings;
 use strict;
+use FindBin qw/$Bin/;
 use Getopt::Long;
 use remove_markup;
 use wrap_tokenizer;
@@ -42,8 +43,11 @@ use reinsert;
     #target language
     my $tl = "de";
 
+    #Okapi Tikal
+    my $tikal = "~/sources/okapi/./tikal.sh";
+
     #tokenizer program
-    my $tok_prog = "perl tokenizer.pm";
+    my $tok_prog = "perl $Bin/tokenizer.pm";
 
     #tokenizer parameters
     my @tok_param;
@@ -64,42 +68,59 @@ use reinsert;
     my @detok_param;
 
 
+    #input & output program
+    my $input;
+    my $output;
 
     my $HELP=0;
-    binmode( STDIN,":utf8");
+    #binmode( STDIN,":utf8");
     #binmode( STDOUT, ":utf8" );
-    binmode( STDERR, ":utf8" );
+    #binmode( STDERR, ":utf8" );
 
  
   
     my $opt_status = GetOptions(
         'sl=s'   => \$sl,
         'tl=s'   => \$tl,
+	'i=s' => \$input,
+	#'o=s' => \$output,
         'help!' => \$HELP,
     );
 
-  if ( ( !$opt_status ) || ($HELP) ) {
+
+  if ( (!defined($input)) || ( !$opt_status ) || ($HELP) ) {
         print "\n$0 converts source InlineText into target InlineText.\n";
-        print "\nUSAGE: perl $0 [-sl -tl] < inFile > outFile\n";
+        print "\nUSAGE: perl $0 [-sl -tl]  -i input  -o output\n";
         print "\t -sl source language (default en)\n";
         print "\t -tl target language (default: de)\n";
-        print "\tinFile - InlineText source file, output of Okapi Tikal (parameter -xm)\n";
-        print "\toutFile - InlineText taret file, input for Okapi Tikal (parameter -lm)\n";
-	print "\tNote: many finer-grained options can be adjusted inside this program\n";
+        print "\t -i input - any translation format acceptable by Okapi Tikal (tmx, xliff, ...)\n";
+        #print "\t-o output - output file\n";
+	print "\tNote: many finer-grained options/paths/programs can be adjusted inside this program\n";
 
         exit;
     }
 
- 
+
+#tikal - conversion into Inline format 
+
+my $command = "$tikal -xm $input -2 -sl $sl -tl $tl -to tmpfile";
+print "$command\n";
+system($command);
+
+my $tmpin = "tmpfile.$sl";
+open(TMPIN, "<:encoding(UTF-8)",$tmpin);
+my $tmpout = "outtmp";
+open(TMPOUT, ">:encoding(UTF-8)",$tmpout);
+
+
 @tok_param = split(" ", "-l $sl -q");
 my $tokenizer = new wrap_tokenizer($tok_prog, @tok_param);
-
-
 my $detokenizer = new wrap_detokenizer($detok_prog, "-l $tl -q");
 
 
+print "Processing $tmpin file...\n";
 
-while(my $source = <STDIN>){
+while(my $source = <TMPIN>){
     chomp($source);
 
     #tokenization
@@ -134,9 +155,21 @@ while(my $source = <STDIN>){
     #fix whitespaces around tags
     my $fix = fix_markup_ws::fix_whitespace($source, $detok);
 
-   print "$fix\n";
+   print TMPOUT "$fix\n";
 
 }
+
+print "...Done\n";
+close(TMPIN);
+close(TMPOUT);
+
+#pick up results and put it back into original file
+$command = "$tikal -lm  $input -from $tmpout ";
+print "$command\n";
+system($command);
+
+unlink $tmpin or warn "Couldn't delete $tmpin file";
+unlink $tmpout or warn "Couldn't delete $tmpout file";
 
 
 __END__

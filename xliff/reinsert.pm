@@ -88,81 +88,58 @@ sub reinsert_elements {
 
     my $target = "";
     my $i;
-    my @cur_open;
     my %pending_close;
     while($traced_target =~ /\G(.*?)\s*\|(\d+)-(\d+)\|\s*/g) {
-	my %trace_elem = ();
+	my $content = $1;
+	my @trace_elements =();
 	# Determine which inline elements are opened or closed in the current trace
 	foreach $i (0..$#elements) {
-	    if(exists $elements[$i]->{e}) {
-		if($elements[$i]->{e} >= $2 && $elements[$i]->{e} <= $3) {
-		    $trace_elem{$i} = $i;
+	    if(exists $elements[$i]->{s}) {
+		if($elements[$i]->{s} >= $2 && $elements[$i]->{s} <= $3) {
+		    push @trace_elements, $i;
+		    $added{$i} = 1;
+		    # Check if corresponding closing element is expecting close
+		    if(exists $elements[$i]->{ct} && $pending_close{$elements[$i]->{ct}}) {
+			push @trace_elements, $elements[$i]->{ct};
+			$added{$elements[$i]->{ct}} = 1;
+			# Eliminate gap for closing elements emitted late
+			$elements[$elements[$i]->{ct}]->{gap} = 0;
+			delete $pending_close{$elements[$i]->{ct}};
+		    }
 		}
 	    }
 	    else {
-		if($elements[$i]->{s} >= $2 && $elements[$i]->{s} <= $3) {
-		    $trace_elem{$i} = $i;
+		if($elements[$i]->{e} >= $2 && $elements[$i]->{e} <= $3) {
+		    # Corresponding opening tag already emmitted?
+		    if($added{$elements[$i]->{ot}}) {
+			push @trace_elements, $i;
+			$added{$i} = 1;
+		    }
+		    else {
+			$pending_close{$i} = 1;
+		    }
 		}
 	    }
 	}
 
-	# Write opening tags before text
-	foreach $i (sort keys %trace_elem) {
-	    # Opening tag
-	    if(exists $elements[$i]->{ct}) {
-		$target .= $elements[$i]->{txt}." ";
-		push @cur_open, $i;
-		# Was the currently opened element waiting to be closed?
-		# If yes, add it to the tags to close for the current trace
-		if(exists $pending_close{$elements[$i]->{ct}}) {
-		    $trace_elem{$elements[$i]->{ct}} = $elements[$i]->{ct};
-		    delete $pending_close{$elements[$i]->{ct}};
-		}
-		delete $trace_elem{$i};
+	# Emit tags and content for trace
+	my $content_emitted = 0;
+	foreach $i (@trace_elements) {
+	    $DB::single = 2;
+	    my $foo =1;
+	    if(!$content_emitted && exists $elements[$i]->{gap} && $elements[$i]->{gap}) {
+		$target .= $content." ";
+		$content_emitted = 1;
 	    }
-	    # Isolated tag
-	    elsif(!exists $elements[$i]->{ot}) {
-		$target .= $elements[$i]->{txt}." ";
-		$added{$trace_elem{$i}} = 1;
-		delete $trace_elem{$i};
-	    }
+	    $target .= $elements[$i]->{txt}." ";
 	}
-
-	# Only closing trace elements are left, add them if the tags are currently open
-	# Determine the deepest tag that needs to be closed in the cur_open stack
-	my ($deepest) = grep($trace_elem{$elements[$_]->{ct}},@cur_open);
-	# Close all elements on the cur_open stack up to the deepest
-	my $closing_before = "";
-	my $closing_after = "";
-	if(defined $deepest) {
-	    my $ot;
-	    while(defined($ot = pop @cur_open)) {
-		my $ct = $elements[$ot]->{ct};
-		if($elements[$ct]->{gap}) {
-		    $closing_after .= $elements[$ct]->{txt}." ";
-		}
-		else {
-		    $closing_before .= $elements[$ct]->{txt}." ";
-		}
-		$added{$ot} = 1;
-		$added{$ct} = 1;
-		if(exists $trace_elem{$ct}) {
-		    delete $trace_elem{$ct};
-		}
-		if($ot == $deepest) {
-		    last;
-		}
-	    }
+	if(!$content_emitted) {
+	    $target .= $content." ";
 	}
-
-	# Append the tags closing before, the target text and the tags closing after
-	$target .= $closing_before."$1 ".$closing_after;
-
-	# Store remaining closing tags in a hash
-	@pending_close{ keys %trace_elem } = values %trace_elem;
     }
 
     # Emit the elements that weren't added yet to the end of the target
+    # TBD: This really should not be necessary, if the algorithm is working
     foreach $i (grep(!$added{$_},0..$#elements)) {
 	$target .= $elements[$i]->{txt}." ";
     }

@@ -33,6 +33,8 @@ use Getopt::Std;
 sub run {
     ref(my $class= shift) and die "Class name needed";
 
+    binmode(STDIN,":utf8");
+    binmode(STDOUT,":utf8");
     # Always flush buffers
     $|++;
 

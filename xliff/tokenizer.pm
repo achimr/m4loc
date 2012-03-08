@@ -27,6 +27,7 @@ use strict;
 use File::Basename;
 use File::Spec qw(rel2abs);
 use Getopt::Std;
+use I18N::LangTags qw(is_language_tag super_languages);
 
 
 # Class Methods
@@ -54,8 +55,12 @@ sub new {
     ref(my $class= shift) and die "Class name needed";
     my $langid = shift;
     $langid = "en" unless defined $langid;
-    if($langid !~ /^[a-z][a-z]$/) {
+    if(!is_language_tag($langid)) {
 	die "Invalid language id: $langid";
+    }
+    my @superlangs = super_languages($langid);
+    if(@superlangs) {
+	$langid = pop @superlangs;
     }
     my $aggressive = shift;
     $aggressive = 0 unless defined $aggressive;

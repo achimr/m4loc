@@ -30,6 +30,7 @@ __PACKAGE__->run(@ARGV) unless caller();
 use strict;
 use utf8; # tell perl this script file is in UTF-8 (see all funny punct below)
 use Getopt::Std;
+use I18N::LangTags qw(is_language_tag super_languages);
 
 sub run() {
     binmode(STDIN, ":utf8");
@@ -43,8 +44,17 @@ sub run() {
     my $language = $opts{l} ? $opts{l} : "en";
     my $uppersent = $opts{u} ? 1 : 0;
 
+    if(!is_language_tag($language)) {
+	die "Invalid language id: $language";
+    }
+    my @superlangs = super_languages($language);
+    if(@superlangs) {
+	$language = pop @superlangs;
+    }
+
     if ($language !~ /^(cs|en|fr|it)$/) {
-	die "No built-in rules for language $language, claim en for default behavior.\n";
+	warn "No built-in rules for language $language, detokenizer falling back to English.\n";
+	$language = "en";
     }
 
     while(<STDIN>) {

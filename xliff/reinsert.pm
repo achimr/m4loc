@@ -125,8 +125,6 @@ sub reinsert_elements {
 	# Emit tags and content for trace
 	my $content_emitted = 0;
 	foreach $i (@trace_elements) {
-	    $DB::single = 2;
-	    my $foo =1;
 	    if(!$content_emitted && exists $elements[$i]->{gap} && $elements[$i]->{gap}) {
 		$target .= $content." ";
 		$content_emitted = 1;

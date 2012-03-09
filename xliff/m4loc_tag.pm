@@ -93,8 +93,12 @@ sub new {
     # spawn moses and recaser
     my ($MOSES_IN, $MOSES_OUT);
     my $pid = open2 ($MOSES_OUT, $MOSES_IN, 'moses', '-f', $moses_config, '-xml-input','exclusive');
+    binmode($MOSES_IN,":utf8");
+    binmode($MOSES_OUT,":utf8");
     my ($RECASE_IN, $RECASE_OUT);
     my $pid6 = open2 ($RECASE_OUT, $RECASE_IN, 'moses','-v',0,'-f',$recaser_config,'-dl',0);
+    binmode($RECASE_IN,":utf8");
+    binmode($RECASE_OUT,":utf8");
 
     my $self = { 
 	MosesIn => $MOSES_IN, 

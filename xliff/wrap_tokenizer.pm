@@ -57,10 +57,10 @@ sub run {
     my @tok_param;
 
     #tmp parameters for tokenizer
-    my $tok_param_str = "-l en -q";
+    my $tok_param_str = "-l en";
 
     #program for tokenization. Default: Moses' tokenizer.perl
-    my $tok_program = "$Bin/./tokenizer.perl";
+    my $tok_program = "$Bin/./tokenizer.pm";
 
     #print out help info if some incorrect options has been inserted
     my $HELP = 0;
@@ -82,8 +82,8 @@ sub run {
     if ( ( !$opt_status ) || ($HELP) ) {
         print "\n$0 converts InlineText into tokenized InlineText.\n";
         print "\nUSAGE: perl $0 [-t -p] < inFile > outFile\n";
-        print "\t -p tokenizer' options (default -p \"-l en -q\")\n";
         print "\t -t tokenizer - program; (default: -t \"perl tokenizer.perl\")\n";
+        print "\t -p tokenizer' options (default -p \"-l en -q\")\n";
         print "\tinFile - InlineText file, output of Okapi Tikal (parameter -xm)\n";
         print "\toutFile - tokenized InlineText file, input for markup_remover\n";
         exit;
@@ -119,9 +119,22 @@ sub new {
         tok_program => $tok_program
     );
 
-    $self{tok} = start [ $tok_program, @tok_param ], '<', \$self{tok_in}, '1>pty>',
+#create array of tok_program and tok_param to be processable by IPC::Run start()
+my @cmd = split(" ",$tok_program);
+push(@cmd, @tok_param);
+
+#    $self{tok} = start [ $tok_program, @tok_param ], '<', \$self{tok_in}, '1>pty>',
+$self{tok} = start \@cmd, '<', \$self{tok_in}, '1>pty>',
       \$self{tok_out}, '2>', \$self{tok_err}, debug => 0
       or die "Can't exec tokenizer program: $?;\n";
+
+
+    #check if tokenizer's STDERR or STDOUT is empty
+    if (( length($self{tok_err} ) != 0 )||(length($self{tok_out})!=0)) {
+        warn "Problem :". $self{tok_err}. " in program \"". $self{tok_program} . "\"\n";
+        $self{tok_err} = '';
+    }
+
 
     bless \%self, $class;
     return \%self;
@@ -130,7 +143,7 @@ sub new {
 
 sub DESTROY {
     my $self = shift;
-    finish( $self->{tok} ) or die "Program: " . $self->{tok_program} . " returned $?";
+    finish( $self->{tok} ) or die "Program: " . $self->{tok_program} . " returned $? and died.";
 }
 
 sub processLine {
@@ -342,7 +355,6 @@ sub tokenize_str {
     my $text = shift;
 
     $self->{tok_in} = $text . "\n";
-
     pump $self->{tok} while $self->{tok_out} !~ /\n\z/;    
 
     $text = $self->{tok_out};

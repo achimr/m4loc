@@ -33,20 +33,22 @@ __PACKAGE__->run(@ARGV) unless caller();
 use warnings;
 use strict;
 use 5.10.0;
-use File::Temp;
 use FindBin qw($Bin);
 use Getopt::Long;
+use IPC::Run qw(start pump finish timeout);
+use Encode;
 
 sub run {
     ref(my $class= shift) and die "Class name needed";
     $|++;
 
 
-    #tmp parameters for detokenizer
-    my $detok_param_str = "-l en -q";
+    # parameters for detokenizer
+    my $detok_param_str = "-l en";
+    my @detok_param;
 
-    #program for detokenization. Default: Moses' tokenizer.perl
-    my $detok_program = "$Bin/./detokenizer.perl";
+    #program for detokenization. Default: detokenizer.pm
+    my $detok_program = "$Bin/./detokenizer.pm";
 
     #print out help info if some incorrect options has been inserted
     my $HELP = 0;
@@ -68,15 +70,18 @@ sub run {
     if ( ( !$opt_status ) || ($HELP) ) {
         print "\n$0 converts tokenized InlineText into InlineText.\n";
         print "\nUSAGE: perl $0 [-t -p] < inFile > outFile\n";
-        print "\t -p detokenizer' options (default -p \"-l en -q\")\n";
-        print "\t -t detokenizer - program; (default: -t \"perl detokenizer.perl\")\n";
+        print "\t -t detokenizer - program; (default: -t \"detokenizer.pm\")\n";
+        print "\t -p detokenizer' options (default -p \"-l en\")\n";
         print "\tinFile - tokenized InlineText file, output of reinsert.pm\n";
         print "\toutFile - InlineText file, input for Tikal (-lm option)\n";
         exit;
     }
 
+    #convert detok_param_str into array
+    @detok_param = split( / /, $detok_param_str ) if length $detok_param_str;
 
-    my $pokus = $class->new($detok_program,$detok_param_str);
+
+    my $pokus = $class->new($detok_program,@detok_param);
 
 
     my $line;
@@ -84,38 +89,48 @@ sub run {
     #read and process STDIN
     while ( $line = <STDIN> ) {
         chomp($line);
-        $pokus->processLine($line);
+        print STDOUT $pokus->processLine($line)."\n";
     }
-
-    close($pokus->{tmpout});
-
-    print $pokus->detok();
 }
 
 sub new {
    ref(my $class= shift) and die "Class name needed";
    my $detok_program = shift;
-   my $detok_param_str = shift;
+   my @detok_param = @_;
 
-  die "$class\->new(program, parameters); detokenizer program and parameters have to be specified!" 
-    unless defined($detok_program) and defined($detok_param_str);
+   my ( $DETOK_IN, $DETOK_OUT , $DETOK_ERR, $DETOK);
+
+    my %self = (
+        detok         => $DETOK,
+        detok_in      => $DETOK_IN,
+        detok_out     => $DETOK_OUT,
+        detok_err     => $DETOK_ERR,
+        detok_program => $detok_program
+    );
+
+#create array of tok_program and tok_param to be processable by IPC::Run start()
+my @cmd = split(" ",$detok_program);
+push(@cmd, @detok_param);
+
+$self{detok} = start \@cmd, '<', \$self{detok_in}, '1>pty>',
+      \$self{detok_out}, '2>', \$self{detok_err}, debug => 0
+      or die "Can't exec detokenizer program: $?;\n";
+
+    #check if tokenizer's STDERR or STDOUT is empty
+    if (( length($self{detok_err} ) != 0 )||(length($self{detok_out})!=0)) {
+        warn "Problem :". $self{detok_err}. " in program \"". $self{detok_program} . "\"\n";
+        $self{tok_err} = '';
+    }
 
 
-     #defining pipe(IPC::Run) for the external tokenizer
-#    our ( $DETOK_IN, $DETOK_OUT, $DETOK_ERR, $DETOK );
-
-
-   #create tmp file for storing encapsulated inLineText data (output of tikal -xm)
-    my $tmpout = File::Temp->new( DIR => '.', TEMPLATE => "tempXXXXX", UNLINK => "0" );
-
-    my $self = {detok_program => $detok_program, detok_param_str => $detok_param_str, tmpout => $tmpout};
-    bless $self, $class;
-    return $self;
+    bless \%self, $class;
+    return \%self;
 }
 
-sub DESTROY{
+sub DESTROY {
     my $self = shift;
-   unlink($self->{tmpout});
+
+    finish( $self->{detok} ) or die "Program: " . $self->{detok_program} . " returned $? and died.";
 }
 
 sub processLine{
@@ -143,25 +158,35 @@ sub processLine{
         $line =~ s/&#x7c;/\|/g;
         $line =~ s/&amp;/&/g;
 
-   print {$self->{tmpout} } $line;
+   my $output = $self->detok($line);
+   return $output;
 }
 
-sub detok{
+sub detok {
     my $self = shift;
+    my $text = shift;
 
-    #if tokenizer is Moses' default, it can work only with a few languages!!!
-    my $lang;
-    ($lang) = ($self->{detok_param_str} =~ /\-l (\S+)/p);
-    if (($self->{detok_program} =~ /detokenizer\.perl/)&&( $lang !~ /(en|cs|fr|it)/ )) {
+    $self->{detok_in} = $text . "\n";
+    pump $self->{detok} while $self->{detok_out} !~ /\n\z/;    
 
+    $text = $self->{detok_out};
+    $self->{detok_out} = '';
 
-       warn "WARNING: Moses detokenizer can work only with en, cs, fr and it languages, not with $lang\n";
+    #check for STDERR from the detokenizer
+    if ( length($self->{detok_err} ) > 0 ) {
+        warn "Problem :". $self->{detok_err}. " in program \"". $self->{detok_program} . "\"\n";
+        $self->{detok_err} = '';
     }
 
-#  system("perl $self->{detok_program} $self->{detok_param_str} < $self->{tmpout}");
-return `perl $self->{detok_program} $self->{detok_param_str} < $self->{tmpout}`;
+    #almost equivalent to chomp - however \r differs
+    $text =~ s/\r?\n\z//;
+    $text = decode( "utf-8", $text );
+    return $text;
 
 } 
+
+1;
+
 
 __END__
 
@@ -209,4 +234,6 @@ TomE<aacute>E<scaron> HudE<iacute>k, thudik@moraviaworldwide.com
 1. strict testing (QA), since it is likely that more sophisticated approach will be required
 (de-tokenization is problematic in Moses since only a few languages are
 supported and it is difficult to add a support for another language)
+
+2. IPC::Run is not giving warning if some name of external program is mistyped, or not started properly
 

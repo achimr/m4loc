@@ -29,7 +29,10 @@ use FindBin qw/$Bin/;
 use Getopt::Long;
 use remove_markup;
 use wrap_tokenizer;
-use wrap_detokenizer;
+#use wrap_tokenizer_achim;
+#use wrap_detokenizer_achim;
+use wrap_detokenizer_run;
+
 use recase_preprocess;
 use recase_postprocess;
 use fix_markup_ws;
@@ -47,7 +50,7 @@ use reinsert;
     my $tikal = "~/sources/okapi/./tikal.sh";
 
     #tokenizer program
-    my $tok_prog = "perl $Bin/tokenizer.pm";
+    my $tok_prog = "perl tokenizer.pm";
 
     #tokenizer parameters
     my @tok_param;
@@ -71,6 +74,9 @@ use reinsert;
     #input & output program
     my $input;
     my $output;
+
+    #if debug=1 some debug info are written into STDERR
+    my $debug = 0;
 
     my $HELP=0;
     #binmode( STDIN,":utf8");
@@ -102,7 +108,6 @@ use reinsert;
 
 
 #tikal - conversion into Inline format 
-
 my $command = "$tikal -xm $input -2 -sl $sl -tl $tl -to tmpfile";
 print "$command\n";
 system($command);
@@ -113,9 +118,10 @@ my $tmpout = "outtmp";
 open(TMPOUT, ">:encoding(UTF-8)",$tmpout);
 
 
-@tok_param = split(" ", "-l $sl -q");
+@tok_param = split(" ", "-l $sl");
+@detok_param = split(" ","-l $sl");
 my $tokenizer = new wrap_tokenizer($tok_prog, @tok_param);
-my $detokenizer = new wrap_detokenizer($detok_prog, "-l $tl -q");
+my $detokenizer = new wrap_detokenizer($detok_prog, @detok_param);
 
 
 print "Processing $tmpin file...\n";
@@ -124,36 +130,53 @@ while(my $source = <TMPIN>){
     chomp($source);
 
     #tokenization
+    print "tokenize ... " if $debug;
     my $tok = $tokenizer->processLine($source);
+    print "ok\nremove ..." if $debug;
     my $rem = remove_markup::remove("",$tok);
+    print "ok\nlowercasing ..." if $debug;
 
     #lowercasing
     my $lower = lc($rem);
+    print "ok\nmoses (translation) ..." if $debug;
 
 
     #moses - BE CAREFUL - USER OWN WAY OF CALLING MOSES HAS TO BE SET UP!!!
     #ECHO IS NOT GOOD FUNCTION SINCE INPUT CAN'T CONTAIN ' CHAR
     my $tmp="echo '$lower' | $moses_prog $moses_param";
     my $moses = `$tmp`;
+    print "ok\nrecase_preprocess ..." if $debug;
+
 
     #truecasing
-    my $truecasing_pre = recase_preprocess::remove_trace($moses);
+    my $truecasing_pre = recase_preprocess::remove_trace($moses);    
+    print "ok\nrecasing ..." if $debug;
+
     #moses trucaser - BE CAREFUL - USER OWN WAY OF CALLING MOSES HAS TO BE SET UP!!!
     #ECHO IS NOT GOOD FUNCTION SINCE INPUT CAN'T CONTAIN ' CHAR   
     $tmp="echo '$truecasing_pre' | $truecase_prog $truecase_param";
     my $truecasing = `$tmp`;
+    print "ok\nrecase_postprocess ..." if $debug;
+
     my $truecasing_post = recase_postprocess::retrace($moses, $truecasing);
+    print "ok\nreinsert ..." if $debug;
+
 
     #reinsert
     my @elements = reinsert::extract_inline($tok);
     my $reins  = reinsert::reinsert_elements($truecasing_post,@elements);
+    print "ok\ndetokenization ...$reins;;" if $debug;
+
 
     #detokenization
-    $detokenizer->processLine($reins);
-    my $detok = $detokenizer->detok();
+    my $detok = $detokenizer->processLine($reins);
+#    my $detok = $detokenizer->detok();
+    print "ok\nfix_whitespaces ..." if $debug;
 
     #fix whitespaces around tags
     my $fix = fix_markup_ws::fix_whitespace($source, $detok);
+    print "ok\n" if $debug;
+
 
    print TMPOUT "$fix\n";
 

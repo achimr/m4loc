@@ -4,8 +4,19 @@ M4Loc project -  Installation
 
 PREREQUISITES
 ================
-Unix/Windows OS
+Unix/Windows OS (Unix OS is strongly recommended since Windows is not strictly following POSIX standard)
 Perl v 5.10.0
+Perl libraries:
+    FindBin
+    Getopt::Long
+    IPC::Run
+    IPC::Cmd
+    Encode
+    XML::LibXML::Reader
+    utf8
+    I18N::LangTags
+    (the libraries can be installed (as a root) via: perl -MCPAN -e 'install IPC::Run'
+
 Okapi Tikal ( code.google.com/p/okapi/downloads/list , documentation: 
 www.opentag.com/okapi/wiki/index.php?title=Tikal )
 
@@ -19,17 +30,28 @@ simply copy all scripts into one directory.
 SCRIPT EXECUTION
 ==================
 Linux/Unix:
-./script_name
+if it is a modullino (pm suffix):
+perl script.pm
+otherwise:
+./script.pl
 
 Windows:
-perl script_name
+perl script
 
-Example:
-./mod_tokenizer.pl -l en < INF > OUTF
+There is one central script called m4loc.pl. This script runs all the 
+others which user is not expected to know or modify in any way. 
+The user is required to adjust CAREFULLY all variables only in the m4loc 
+script (external programs names and options). When all the paths and variables 
+are set, the script can be executed:
 
-perl will execute the script mod_tokenizer.pl with the -l option set to "en". 
-The input is "INF" (it can be a file, or other standard input). The output 
-"OUTF" is regular file. If no output is specified, it will be written to the
-standard output (most often it is displayed).
+./m4loc.pl -i my_file.xlf
+or:
+perl m4loc.pl -sl en -tl de -i my_file.xlf
 
-For a deeper understanding of scripts, read README.txt
+
+perl will start m4loc script with source language: English (en) and target 
+language: German (de). The script continually process input file (-i my_file.xlf). 
+The result (original file + translation) is written out as my_file.out.xlf
+
+For a deeper understanding of scripts and processes read README.txt
+

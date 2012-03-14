@@ -36,6 +36,7 @@ use 5.10.0;
 use FindBin qw($Bin);
 use Getopt::Long;
 use IPC::Run qw(start pump finish timeout);
+use IPC::Cmd qw(can_run);
 use Encode;
 
 sub run {
@@ -48,7 +49,7 @@ sub run {
     my @detok_param;
 
     #program for detokenization. Default: detokenizer.pm
-    my $detok_program = "$Bin/./detokenizer.pm";
+    my $detok_program = "perl $Bin/./detokenizer.pm";
 
     #print out help info if some incorrect options has been inserted
     my $HELP = 0;
@@ -111,6 +112,9 @@ sub new {
 #create array of tok_program and tok_param to be processable by IPC::Run start()
 my @cmd = split(" ",$detok_program);
 push(@cmd, @detok_param);
+
+#my $coo=can_run($detok_program) or die "hmmmmmmmmm!!! $detok_program koncim dietky moje\n";
+#print "$coo=coo;\n";
 
 $self{detok} = start \@cmd, '<', \$self{detok_in}, '1>pty>',
       \$self{detok_out}, '2>', \$self{detok_err}, debug => 0

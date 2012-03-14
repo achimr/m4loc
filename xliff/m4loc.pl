@@ -29,9 +29,7 @@ use FindBin qw/$Bin/;
 use Getopt::Long;
 use remove_markup;
 use wrap_tokenizer;
-#use wrap_tokenizer_achim;
-#use wrap_detokenizer_achim;
-use wrap_detokenizer_run;
+use wrap_detokenizer;
 
 use recase_preprocess;
 use recase_postprocess;
@@ -79,9 +77,9 @@ use reinsert;
     my $debug = 0;
 
     my $HELP=0;
-    #binmode( STDIN,":utf8");
-    #binmode( STDOUT, ":utf8" );
-    #binmode( STDERR, ":utf8" );
+    binmode( STDIN,":utf8");
+    binmode( STDOUT, ":utf8" );
+    binmode( STDERR, ":utf8" );
 
  
   
@@ -89,18 +87,16 @@ use reinsert;
         'sl=s'   => \$sl,
         'tl=s'   => \$tl,
 	'i=s' => \$input,
-	#'o=s' => \$output,
         'help!' => \$HELP,
     );
 
 
   if ( (!defined($input)) || ( !$opt_status ) || ($HELP) ) {
         print "\n$0 converts source InlineText into target InlineText.\n";
-        print "\nUSAGE: perl $0 [-sl -tl]  -i input  -o output\n";
+        print "\nUSAGE: perl $0 [-sl -tl]  -i input \n";
         print "\t -sl source language (default en)\n";
         print "\t -tl target language (default: de)\n";
         print "\t -i input - any translation format acceptable by Okapi Tikal (tmx, xliff, ...)\n";
-        #print "\t-o output - output file\n";
 	print "\tNote: many finer-grained options/paths/programs can be adjusted inside this program\n";
 
         exit;
@@ -123,17 +119,25 @@ open(TMPOUT, ">:encoding(UTF-8)",$tmpout);
 my $tokenizer = new wrap_tokenizer($tok_prog, @tok_param);
 my $detokenizer = new wrap_detokenizer($detok_prog, @detok_param);
 
-
+print "\n\n\n";
 print "Processing $tmpin file...\n";
 
-while(my $source = <TMPIN>){
+NEW_LINE:while(my $source = <TMPIN>){
     chomp($source);
+
+    #filter out empty lines
+    if($source eq ""){
+	print TMPOUT "\n";
+	next NEW_LINE;
+    }
 
     #tokenization
     print "tokenize ... " if $debug;
     my $tok = $tokenizer->processLine($source);
+    warn "Problem during tokenization -- input:\"$source\"; no output!\n"    if($tok eq "");
     print "ok\nremove ..." if $debug;
     my $rem = remove_markup::remove("",$tok);
+    warn "Problem during markup removal -- input:\"$tok\"; no output!\n"    if($rem eq "");
     print "ok\nlowercasing ..." if $debug;
 
     #lowercasing
@@ -141,48 +145,53 @@ while(my $source = <TMPIN>){
     print "ok\nmoses (translation) ..." if $debug;
 
 
-    #moses - BE CAREFUL - USER OWN WAY OF CALLING MOSES HAS TO BE SET UP!!!
+    #moses - BE CAREFUL - USER SPECIFIC WAY OF CALLING OF MOSES HAS TO BE SET UP!!!
     #ECHO IS NOT GOOD FUNCTION SINCE INPUT CAN'T CONTAIN ' CHAR
     my $tmp="echo '$lower' | $moses_prog $moses_param";
     my $moses = `$tmp`;
+    warn "Problem during Moses' translation -- input:\"$lower\"; no output!\n"    if($moses eq "");
     print "ok\nrecase_preprocess ..." if $debug;
 
 
-    #truecasing
-    my $truecasing_pre = recase_preprocess::remove_trace($moses);    
+    #recasing
+    my $recase_pre = recase_preprocess::remove_trace($moses);    
+    warn "Problem during recase preprocessing -- input:\"$moses\"; no output!\n"    if($recase_pre eq "");
     print "ok\nrecasing ..." if $debug;
 
-    #moses trucaser - BE CAREFUL - USER OWN WAY OF CALLING MOSES HAS TO BE SET UP!!!
+    #moses recaser - BE CAREFUL - USER SPECIFIC WAY OF CALLING OF MOSES HAS TO BE SET UP!!!
     #ECHO IS NOT GOOD FUNCTION SINCE INPUT CAN'T CONTAIN ' CHAR   
-    $tmp="echo '$truecasing_pre' | $truecase_prog $truecase_param";
-    my $truecasing = `$tmp`;
+    $tmp="echo '$recase_pre' | $truecase_prog $truecase_param";
+    my $recase = `$tmp`;
+    warn "Problem during Moses' recasing -- input:\"$recase_pre\"; no output!\n"    if($recase eq "");
     print "ok\nrecase_postprocess ..." if $debug;
 
-    my $truecasing_post = recase_postprocess::retrace($moses, $truecasing);
+    my $recase_post = recase_postprocess::retrace($moses, $recase);
+    warn "Problem during recase postprocess -- input:\"$moses\" and \"$recase\"; no output!\n"    if($recase_post eq "");
     print "ok\nreinsert ..." if $debug;
 
 
     #reinsert
     my @elements = reinsert::extract_inline($tok);
-    my $reins  = reinsert::reinsert_elements($truecasing_post,@elements);
-    print "ok\ndetokenization ...$reins;;" if $debug;
+    my $reins  = reinsert::reinsert_elements($recase_post,@elements);
+    warn "Problem during reinsertion -- input:\"$tok\" and \"$recase_post\"; no output!\n" if($reins eq "");
+    print "ok\ndetokenization ..." if $debug;
 
 
     #detokenization
     my $detok = $detokenizer->processLine($reins);
-#    my $detok = $detokenizer->detok();
+    warn "Problem during detokenization -- input:\"$reins\"; no output!\n"    if($detok eq "");
     print "ok\nfix_whitespaces ..." if $debug;
 
     #fix whitespaces around tags
     my $fix = fix_markup_ws::fix_whitespace($source, $detok);
+    warn "Problem during white spaces fixation -- input:\"$source\" and \"$detok\"; no output!\n"    if($fix eq "");
     print "ok\n" if $debug;
 
 
    print TMPOUT "$fix\n";
-
 }
 
-print "...Done\n";
+print "\nfile $tmpin ...done\n\n\n";
 close(TMPIN);
 close(TMPOUT);
 
@@ -200,7 +209,6 @@ __END__
 TODO:
 1. make uniform interface for each modulino script
 2. wrap_detokenizer (detokenizer - only a few languages)
-3. handling of STDERR 
 
 
 

@@ -42,7 +42,7 @@ use strict;
 use 5.10.0;
 use XML::LibXML::Reader;
 use FindBin qw($Bin);
-use IPC::Run qw(start pump finish timeout);
+use IPC::Run qw(start pump finish timeout pumpable);
 use Encode;
 use Getopt::Long;
 
@@ -134,6 +134,25 @@ $self{tok} = start \@cmd, '<', \$self{tok_in}, '1>pty>',
         warn "Problem :". $self{tok_err}. " in program \"". $self{tok_program} . "\"\n";
         $self{tok_err} = '';
     }
+
+
+#is external tokenizer fully functional?
+    $self{tok_in} =  "try it\n";
+eval{    
+    pump $self{tok} while $self{tok_out} !~ /\n\z/;    
+}; warn "Problem in pumping:$@\n" if($@);
+
+    $self{tok_out} = '';
+    #check for STDERR from the detokenizer
+    if ( $self{tok_err} ne "" ) {
+        warn "External tokenizer: \"".$self{tok_program}."\" fired error: ".$self{tok_err}."\n";
+        $self{tok_err} = '';
+    }
+
+if(!pumpable($self{tok})){
+    die "Tokenizer \"".$self{tok_program}."\" died ...\n\tExit...\n";
+}
+#end of "is external tokenizer fully functional?"
 
 
     bless \%self, $class;

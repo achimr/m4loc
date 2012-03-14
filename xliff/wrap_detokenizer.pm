@@ -5,7 +5,7 @@ package wrap_detokenizer;
 __PACKAGE__->run(@ARGV) unless caller();
 
 #
-# Script wrap_detokenizer.pl detokenizes data from Markup Reinserter; after
+# Script wrap_detokenizer.pm detokenizes data from Markup Reinserter; after
 # this step, tikal -lm takes place. wrap_detokenizer is a part of M4Loc effort
 # http://code.google.com/p/m4loc/. Moses' detokenizer.perl and
 # nonbreaking_prefixes direcory are required by the script.
@@ -35,8 +35,8 @@ use strict;
 use 5.10.0;
 use FindBin qw($Bin);
 use Getopt::Long;
-use IPC::Run qw(start pump finish timeout);
-use IPC::Cmd qw(can_run);
+use IPC::Run qw(start pump finish timeout pumpable);
+#use IPC::Cmd qw(can_run);
 use Encode;
 
 sub run {
@@ -113,9 +113,6 @@ sub new {
 my @cmd = split(" ",$detok_program);
 push(@cmd, @detok_param);
 
-#my $coo=can_run($detok_program) or die "hmmmmmmmmm!!! $detok_program koncim dietky moje\n";
-#print "$coo=coo;\n";
-
 $self{detok} = start \@cmd, '<', \$self{detok_in}, '1>pty>',
       \$self{detok_out}, '2>', \$self{detok_err}, debug => 0
       or die "Can't exec detokenizer program: $?;\n";
@@ -125,6 +122,24 @@ $self{detok} = start \@cmd, '<', \$self{detok_in}, '1>pty>',
         warn "Problem :". $self{detok_err}. " in program \"". $self{detok_program} . "\"\n";
         $self{tok_err} = '';
     }
+
+    #is external detokenizer fully functional?
+    $self{detok_in} =  "try it\n";
+eval{    
+    pump $self{detok} while $self{detok_out} !~ /\n\z/;    
+}; warn "Problem in pumping:$@\n" if($@);
+
+    $self{detok_out} = '';
+    #check for STDERR from the detokenizer
+    if ( $self{detok_err} ne "" ) {
+        warn "External detokenizer: \"".$self{detok_program}."\" fired error: ".$self{detok_err}."\n";
+        $self{detok_err} = '';
+    }
+
+if(!pumpable($self{detok})){
+    die "Detokenizer \"".$self{detok_program}."\" died ...\n\tExit...\n";
+}
+#end of "is external detokenizer fully functional?"
 
 
     bless \%self, $class;

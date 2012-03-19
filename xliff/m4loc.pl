@@ -146,22 +146,29 @@ NEW_LINE:while(my $source = <TMPIN>){
 
 
     #moses - BE CAREFUL - USER SPECIFIC WAY OF CALLING OF MOSES HAS TO BE SET UP!!!
-    #ECHO IS NOT GOOD FUNCTION SINCE INPUT CAN'T CONTAIN ' CHAR
-    my $tmp="echo '$lower' | $moses_prog $moses_param";
+
+    #replace " by \" not to harm echo function
+    $lower =~ s/"/\\"/g;
+    my $tmp="echo \"". $lower. "\" | $moses_prog $moses_param";
     my $moses = `$tmp`;
+    chomp($moses);
     warn "Problem during Moses' translation -- input:\"$lower\"; no output!\n"    if($moses eq "");
     print "ok\nrecase_preprocess ..." if $debug;
 
 
-    #recasing
+    #recasing preprocess
     my $recase_pre = recase_preprocess::remove_trace($moses);    
     warn "Problem during recase preprocessing -- input:\"$moses\"; no output!\n"    if($recase_pre eq "");
     print "ok\nrecasing ..." if $debug;
 
+
     #moses recaser - BE CAREFUL - USER SPECIFIC WAY OF CALLING OF MOSES HAS TO BE SET UP!!!
-    #ECHO IS NOT GOOD FUNCTION SINCE INPUT CAN'T CONTAIN ' CHAR   
-    $tmp="echo '$recase_pre' | $recase_prog $recase_param";
+
+    #replace " by \" not to harm echo function
+    $recase_pre =~ s/"/\\"/g;
+    $tmp="echo \"".$recase_pre."\" | $recase_prog $recase_param";
     my $recase = `$tmp`;
+    chomp($recase);
     warn "Problem during Moses' recasing -- input:\"$recase_pre\"; no output!\n"    if($recase eq "");
     print "ok\nrecase_postprocess ..." if $debug;
 
@@ -209,7 +216,6 @@ __END__
 TODO:
 1. make uniform interface for each modulino script
 2. wrap_detokenizer (detokenizer - only a few languages)
-3. echo - can't be used for STDIN reading , since escape characters ' can not be in user's string!!!
 
 
 

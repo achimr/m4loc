@@ -15,21 +15,29 @@ For installation and software prerequisites, read INSTALL.txt
 XLIFF <=> Moses transformation
 ===============================
 Scripts:
-m4loc.pl
+1. m4loc.pl
+2. wrap_tokenizer.pm
+3. remove_markup.pm
+6. recase_preprocess.pm
+8. recase_postprocess.pm
+9. reinsert.pm
+10. wrap_detokenizer.pm
+11. fix_markup_ws.pm
+
+Numbers: 4,5 and 7 are covered by external programs (more in the Workflow 
+section)
+
+Scripts:
 m4loc.pm
 m4loc_tag.pm
-wrap_tokenizer.pm
-wrap_detokenizer.pm
-remove_markup.pm
-reinsert.pm
-fix_markup_ws.pm
-recase_preprocess.pm
-recase_postprocess.pm
 tokenizer.pm
 detokenizer.pm
-lowercase.perl
+They are extensions, or they can create some alternation to the previously 
+described scripts
 
-Process:
+
+Workflow:
+=========
 The whole XLIFF<=>Moses transformation is covered by m4loc.pl. It is
 important to set up all variables and paths in this program before it is
 executed.

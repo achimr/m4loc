@@ -35,7 +35,7 @@ my @detok_param = ('-l','en');
 $ENV{'PATH'} = '/usr/local/bin:'.LIB_DIR;
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)}; 
 
-my $m4loc = m4loc->new("fr","en",LIB_DIR."/tokenizer.pm",\@tok_param,LIB_DIR."/detokenizer.pm",\@detok_param,"./moses.ini","./recaser.ini");
+my $m4loc = m4loc->new("fr","en","./moses.ini","./recaser.ini",LIB_DIR."/tokenizer.pm",\@tok_param,LIB_DIR."/detokenizer.pm",\@detok_param);
 my $source = $q->param('source');
 if(length($source) > 500) {
     print $q->header('text/plain','413 Request Entity Too Large');

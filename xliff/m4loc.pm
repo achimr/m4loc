@@ -29,6 +29,8 @@ use strict;
 use FindBin qw($Bin);
 use Getopt::Std;
 use IPC::Open2;
+use File::Basename;
+use File::Spec qw(rel2abs);
 use wrap_tokenizer;
 use wrap_detokenizer;
 use remove_markup;
@@ -49,6 +51,10 @@ sub run {
     my %opts;
     getopts("s:l:k:d:m:r:",\%opts);
 
+    if(@ARGV != 0) {
+	die "Usage: perl $0 [-s source_language][-t target_language][-m moses_ini_file][-r recaser_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
+    }
+
     # Source language
     my $sl = $opts{s} ? $opts{s} : "fr";
 
@@ -56,12 +62,30 @@ sub run {
     my $tl = $opts{t} ? $opts{t} : "en";
 
     # Tokenizer configuration
-    my $tok_prog = $opts{k} ? $opts{k} : "$Bin/tokenizer.pm";
-    my @tok_param = ("-l",$sl);
+    my $tok_prog;
+    my @tok_param;
+    if(!$opts{k}) {
+	$tok_prog = "$Bin/tokenizer.pm";
+	@tok_param = ("-l",$sl);
+    }
+    else {
+	my @tok_command = split(/ /,$opts{k});
+	$tok_prog = shift @tok_command;
+	@tok_param = @tok_command;
+    }
 
     # Detokenizer program
-    my $detok_prog = $opts{d} ? $opts{d} : "$Bin/detokenizer.pm";
-    my @detok_param = ("-l",$tl);
+    my $detok_prog;
+    my @detok_param;
+    if(!$opts{d}) {
+	$detok_prog = "$Bin/detokenizer.pm";
+	@detok_param = ("-l",$tl);
+    }
+    else {
+	my @detok_command = split(/ /,$opts{d});
+	$detok_prog = shift @detok_command;
+	@detok_param = @detok_command;
+    }
 
     # Moses configuration 
     my $moses_config = $opts{m} ? $opts{m} : "$Bin/moses.ini";
@@ -69,7 +93,7 @@ sub run {
     # Recaser configuration file
     my $recaser_config = $opts{r} ? $opts{r} : "$Bin/recaser.ini";
 
-    my $inlinetextmt = $class->new($sl,$tl,$tok_prog,\@tok_param,$detok_prog,\@detok_param,$moses_config,$recaser_config);
+    my $inlinetextmt = $class->new($sl,$tl,$moses_config,$recaser_config,$tok_prog,\@tok_param,$detok_prog,\@detok_param);
     while(my $source = <STDIN>){
 	chomp $source;
 	print $inlinetextmt->translate($source),"\n";
@@ -81,14 +105,24 @@ sub new {
     ref(my $class= shift) and die "Class name needed";
     my $sourcelang = shift;
     my $targetlang = shift;
+    my $moses_config = shift;
+    my $recaser_config = shift;
     my $tok_prog = shift;
     my $tok_param_ref = shift;
     my $detok_prog = shift;
     my $detok_param_ref = shift;
-    my $moses_config = shift;
-    my $recaser_config = shift;
     
     # New tokenizer and detokenizer objects
+    # Use __FILE__ to determine library directory
+    my ($myfile,$mydir) = fileparse(File::Spec->rel2abs(__FILE__));
+    if(!$tok_prog) {
+	$tok_prog = "$mydir/tokenizer.pm";
+	$tok_param_ref = ['-l',$sourcelang];
+    }
+    if(!$detok_prog) {
+	$detok_prog = "$mydir/detokenizer.pm";
+	$detok_param_ref = ['-l',$targetlang];
+    }
     my $tokenizer = wrap_tokenizer->new($tok_prog, @{$tok_param_ref});
     my $detokenizer = wrap_detokenizer->new($detok_prog, @{$detok_param_ref});
 

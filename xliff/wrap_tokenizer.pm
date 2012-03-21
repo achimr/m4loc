@@ -8,7 +8,7 @@ __PACKAGE__->run(@ARGV) unless caller();
 # Script wrap_tokenizer.pm takes input (line - STDIN, or file) split it into
 # chunks. Chunks can be a plain text or special inlines (tags), URL adresses,... which
 # should not be translated. The input needs to be in so-called InlineText format; this
-# data format can be obtained from tikal -xm (Okapi Framework) output. wrap_tokenizer
+# data format can be gained from tikal -xm (Okapi Framework) process. wrap_tokenizer
 # is a part of M4Loc effort http://code.google.com/p/m4loc/.
 # The output is tokenized/segmented InlineText.
 # Note: If Moses' tokenizer.perl is chosen as the tokenizer (default) make sure that
@@ -17,7 +17,7 @@ __PACKAGE__->run(@ARGV) unless caller();
 #
 #
 #
-# © 2011 Moravia a.s. (DBA Moravia WorldWide),
+# © 2012 Moravia a.s. (DBA Moravia WorldWide),
 # Tomáš Hudík thudik@moraviaworldwide.com
 #
 # This program is free software: you can redistribute it and/or modify

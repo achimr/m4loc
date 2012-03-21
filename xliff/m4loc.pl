@@ -132,17 +132,17 @@ NEW_LINE:while(my $source = <TMPIN>){
     }
 
     #tokenization
-    print "tokenize ... " if $debug;
+    warn "tokenize ... " if $debug;
     my $tok = $tokenizer->processLine($source);
     warn "Problem during tokenization -- input:\"$source\"; no output!\n"    if($tok eq "");
-    print "ok\nremove ..." if $debug;
+    warn "ok\nremove ..." if $debug;
     my $rem = remove_markup::remove("",$tok);
     warn "Problem during markup removal -- input:\"$tok\"; no output!\n"    if($rem eq "");
-    print "ok\nlowercasing ..." if $debug;
+    warn "ok\nlowercasing ..." if $debug;
 
     #lowercasing
     my $lower = lc($rem);
-    print "ok\nmoses (translation) ..." if $debug;
+    warn "ok\nmoses (translation) ..." if $debug;
 
 
     #moses - BE CAREFUL - USER SPECIFIC WAY OF CALLING OF MOSES HAS TO BE SET UP!!!
@@ -153,13 +153,13 @@ NEW_LINE:while(my $source = <TMPIN>){
     my $moses = `$tmp`;
     chomp($moses);
     warn "Problem during Moses' translation -- input:\"$lower\"; no output!\n"    if($moses eq "");
-    print "ok\nrecase_preprocess ..." if $debug;
+    warn "ok\nrecase_preprocess ..." if $debug;
 
 
     #recasing preprocess
     my $recase_pre = recase_preprocess::remove_trace($moses);    
     warn "Problem during recase preprocessing -- input:\"$moses\"; no output!\n"    if($recase_pre eq "");
-    print "ok\nrecasing ..." if $debug;
+    warn "ok\nrecasing ..." if $debug;
 
 
     #moses recaser - BE CAREFUL - USER SPECIFIC WAY OF CALLING OF MOSES HAS TO BE SET UP!!!
@@ -170,29 +170,29 @@ NEW_LINE:while(my $source = <TMPIN>){
     my $recase = `$tmp`;
     chomp($recase);
     warn "Problem during Moses' recasing -- input:\"$recase_pre\"; no output!\n"    if($recase eq "");
-    print "ok\nrecase_postprocess ..." if $debug;
+    warn "ok\nrecase_postprocess ..." if $debug;
 
     my $recase_post = recase_postprocess::retrace($moses, $recase);
     warn "Problem during recase postprocess -- input:\"$moses\" and \"$recase\"; no output!\n"    if($recase_post eq "");
-    print "ok\nreinsert ..." if $debug;
+    warn "ok\nreinsert ..." if $debug;
 
 
     #reinsert
     my @elements = reinsert::extract_inline($tok);
     my $reins  = reinsert::reinsert_elements($recase_post,@elements);
     warn "Problem during reinsertion -- input:\"$tok\" and \"$recase_post\"; no output!\n" if($reins eq "");
-    print "ok\ndetokenization ..." if $debug;
+    warn "ok\ndetokenization ..." if $debug;
 
 
     #detokenization
     my $detok = $detokenizer->processLine($reins);
     warn "Problem during detokenization -- input:\"$reins\"; no output!\n"    if($detok eq "");
-    print "ok\nfix_whitespaces ..." if $debug;
+    warn "ok\nfix_whitespaces ..." if $debug;
 
     #fix whitespaces around tags
     my $fix = fix_markup_ws::fix_whitespace($source, $detok);
     warn "Problem during white spaces fixation -- input:\"$source\" and \"$detok\"; no output!\n"    if($fix eq "");
-    print "ok\n" if $debug;
+    warn "ok\n" if $debug;
 
 
    print TMPOUT "$fix\n";

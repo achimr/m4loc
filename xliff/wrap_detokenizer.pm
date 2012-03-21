@@ -7,12 +7,13 @@ __PACKAGE__->run(@ARGV) unless caller();
 #
 # Script wrap_detokenizer.pm detokenizes data from Markup Reinserter; after
 # this step, tikal -lm takes place. wrap_detokenizer is a part of M4Loc effort
-# http://code.google.com/p/m4loc/. Moses' detokenizer.perl and
-# nonbreaking_prefixes direcory are required by the script.
+# http://code.google.com/p/m4loc/. If default (Moses) detokenizer is used,
+# detokenizer.perl (or detokenizer.pm) and nonbreaking_prefixes direcory are 
+# required by this script.
 #
 #
 #
-# © 2011 Moravia a.s. (DBA Moravia WorldWide),
+# © 2012 Moravia a.s. (DBA Moravia WorldWide),
 # Tomáš Hudík thudik@moraviaworldwide.com
 #
 # This program is free software: you can redistribute it and/or modify
@@ -233,10 +234,10 @@ is ready to be processed by tikal -lm process (Okapi framework). Workflow:
 L<http://bit.ly/gOms1Y>
 
 -t specify an path to and external detokenizer itself (default -t
-"./tokenizer.perl" )
+"perl detokenizer.pm" )
 
--p options for the selected tokenizer (default -p "-q -l en" - which means quiet
-run and English language"
+-p options for the selected tokenizer (default -p "-l en" - which means English 
+language
 
 =head3 PREREQUISITES
 perl at least 5.10.0
@@ -245,7 +246,7 @@ Getopt::Long;
 
 =head3 Author
 
-TomE<aacute>E<scaron> HudE<iacute>k, thudik@moraviaworldwide.com
+Tomáš Hudík, thudik@moraviaworldwide.com
 
 
 =head3 TODO:

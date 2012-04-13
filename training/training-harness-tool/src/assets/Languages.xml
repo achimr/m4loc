@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<languages>
+	<language id="en_us">en</language>
+	<language id="fr_fr">fr</language>
+	<language id="de_de">de</language>
+	<language id="ja_jp">ja</language>
+	<language id="es_es">es</language>
+	<language id="it_it">it</language>
+	<language id="nl_nl">nl</language>
+	<language id="sv_se">sv</language>
+	<language id="pt_br">pt</language>
+	<language id="da_dk">da</language>
+	<language id="fi_fi">fi</language>
+	<language id="no_no">no</language>
+	<language id="ko_kr">ko</language>
+	<language id="zh_cn">zh-CN</language>
+	<language id="zh_tw">zh-TW</language>
+	<language id="he_il">he</language>
+	<language id="ar_ae">ar</language>
+	<language id="hu_hu">hu</language>
+	<language id="tr_tr">tr</language>
+	<language id="cs_cz">cs</language>
+	<language id="pl_pl">pl</language>
+	<language id="el_gr">el</language>
+	<language id="ru_ru">ru</language>
+	<language id="ro_ro">ro</language>
+	<language id="uk_ua">uk</language>	
+	<language id="sl_si">sl</language>	
+	<language id="hr_hr">hr</language>
+	<language id="bg_bg">bg</language>
+	<language id="lv_lv">lv</language>
+	<language id="lt_lt">lt</language>
+	<language id="sk_sk">sk</language>
+</languages>

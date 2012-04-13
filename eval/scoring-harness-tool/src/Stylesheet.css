@@ -1,0 +1,49 @@
+/* CSS file */
+/*
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+*/
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+.addButton
+{
+	upSkin:Embed(source='assets/images/button_add_up.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	downSkin:Embed(source='assets/images/button_add_over.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	overSkin:Embed(source='assets/images/button_add_over.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	selectedUpSkin:Embed(source='assets/images/button_add_over.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	selectedOverSkin:Embed(source='assets/images/button_add_over.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	disabledSkin:Embed(source='assets/images/button_add_up.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	color:#000000;
+	textRollOverColor:#000000;
+}
+
+.removeButton
+{
+	upSkin:Embed(source='assets/images/button_remove_up.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	downSkin:Embed(source='assets/images/button_remove_over.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	overSkin:Embed(source='assets/images/button_remove_over.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	selectedUpSkin:Embed(source='assets/images/button_remove_over.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	selectedOverSkin:Embed(source='assets/images/button_remove_over.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	disabledSkin:Embed(source='assets/images/button_remove_up.png', scaleGridLeft=10, scaleGridRight=11, scaleGridTop=10,scaleGridBottom=11);
+	color:#000000;
+	textRollOverColor:#000000;
+}

@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:UI="com.Adobe.UI.*"
+			   xmlns:comps="com.Adobe.comps.*"
+			   title="Moses Scoring Harness Tool 1.0"
+			   close="titlewindow1_closeHandler(event)" 
+			   width="100%" height="100%" 
+			   horizontalCenter="0" verticalCenter="0" 
+			   showCloseButton="true" verticalScrollPolicy="auto">
+	<fx:Script>
+		<![CDATA[
+			import com.Adobe.config.UserConfig;
+			import com.Adobe.managers.LanguageManager;
+			import com.Adobe.process.Process;
+			
+			import mx.controls.Alert;
+			import mx.controls.ComboBox;
+			import mx.controls.Text;
+			import mx.controls.TextInput;
+			import mx.core.Container;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.CursorManager;
+			import mx.managers.PopUpManager;
+			
+			import org.osmf.events.TimeEvent;
+			
+			[Bindable]
+			private var _langMgr:LanguageManager = LanguageManager.getInstance();
+			
+			[Bindable]
+			private var _usrConfig:UserConfig = UserConfig.getInstance();
+			
+			[Bindable]
+			private var _labels:Array = new Array("Reference file:", "Source file:");
+
+
+			protected function titlewindow1_closeHandler(event:CloseEvent):void
+			{
+				stage.nativeWindow.close();
+			}
+
+
+			protected function btnRun_clickHandler(event:MouseEvent):void
+			{
+				var parameters:Array = new Array();
+				var targetFileParameter:Array = new Array();
+				
+				parameters.push(srcLangList.text);
+				parameters.push(trgLangList.text);
+				parameters.push(new Array(chkboxBLEU.selected, bleuPath.location.text));
+				parameters.push(new Array(chkboxMETEOR.selected, meteorPath.location.text));
+				parameters.push(new Array(chkboxTER.selected, terPath.location.text));
+				
+				for ( var i:int = 0; i < selectFile.length; i ++ )
+				{
+					parameters.push(selectFile[i].browse.location.text);
+				}
+				
+				function findAllTargetParameters(object:DisplayObject):void
+				{
+					if (object is Container)
+					{
+						var container:Container = Container(object);
+						var numChildren:int = container.numChildren;
+						
+						for ( var j:int = 0; j < numChildren; j ++ )
+						{
+							findAllTargetParameters(container.getChildAt(j));
+						}
+
+					}
+					else
+					{
+						if (object.name == "location")
+						{
+							var location:TextInput = TextInput(object);
+							trace(location.text);
+							targetFileParameter.push(location.text);
+						}
+						if (object.name == "engineType")
+						{
+							var engineType:ComboBox = ComboBox(object);
+							trace(engineType.text);
+							targetFileParameter.push(engineType.text);
+						}
+						if (object.name == "engineID")
+						{
+							var engineID:TextInput = TextInput(object);
+							trace(engineID.text);
+							targetFileParameter.push(engineID.text);
+						}
+					}
+				}
+				
+				findAllTargetParameters(selectTargetFiles);
+				
+				parameters.push(targetFileParameter);
+				
+				if ( parameters.indexOf("") == -1 )
+				{
+					var process:Process = new Process();
+					
+					output.text = "";
+					
+					process.start(parameters);
+				}
+				else
+				{
+//					Alert.show("Please make sure you've selected all files.","Alert");
+				}
+				
+			}
+			
+			
+			protected function btnAbout_clickHandler(event:MouseEvent):void
+			{
+				var aboutWin:AboutWindow = new AboutWindow();
+				
+				PopUpManager.addPopUp(aboutWin, this, true);
+				PopUpManager.centerPopUp(aboutWin);
+			}
+			
+
+			protected function btnLog_clickHandler(event:MouseEvent):void
+			{
+				var logWin:LogWindow = new LogWindow();
+				PopUpManager.addPopUp(logWin, this, true);
+				PopUpManager.centerPopUp(logWin);
+			}
+
+
+			protected function bleuPath_pathSelectedHandler(event:Event):void
+			{
+				_usrConfig.bleuPath = event.currentTarget.path;
+			}
+
+
+			protected function meteorPath_pathSelectedHandler(event:Event):void
+			{
+				_usrConfig.meteorPath = event.currentTarget.path;
+			}
+
+
+			protected function terPath_pathSelectedHandler(event:Event):void
+			{
+				_usrConfig.terPath = event.currentTarget.path;
+			}
+
+
+			protected function output_valueCommitHandler(event:FlexEvent):void
+			{
+				callLater(refreshScrollPosition);
+				
+				function refreshScrollPosition():void
+				{
+					event.currentTarget.verticalScrollPosition = event.currentTarget.maxVerticalScrollPosition;
+				}
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<mx:NumberValidator source="{srcLangList}" property="selectedIndex" minValue="0" lowerThanMinError="Please select source language!" trigger="{btnRun}" triggerEvent="click" />
+		<mx:NumberValidator source="{trgLangList}" property="selectedIndex" minValue="0" lowerThanMinError="Please select target language!" trigger="{btnRun}" triggerEvent="click" />
+	</fx:Declarations>
+	<mx:VBox width="100%" height="100%" paddingTop="10" paddingLeft="10" paddingRight="10" paddingBottom="10">
+		<mx:HBox width="100%">
+			<mx:VBox height="100%">
+				<mx:HBox width="100%" backgroundColor="#F5FAFC">
+					<mx:Label text="Evaluation name:" fontWeight="bold"/>
+				</mx:HBox>
+				<mx:TextInput id="evalID" width="100%"/>
+				<mx:HBox>
+					<mx:Label text="Source language:" fontWeight="bold" width="120"/>
+					<mx:ComboBox id="srcLangList" dataProvider="{_langMgr.allLanguages}"/>
+				</mx:HBox>
+				<mx:HBox>
+					<mx:Label text="Target language:" fontWeight="bold" width="120"/>
+					<mx:ComboBox id="trgLangList" dataProvider="{_langMgr.allLanguages}"/>
+				</mx:HBox>
+			</mx:VBox>
+			<mx:VRule height="100%"/>
+			<mx:VBox width="100%" height="100%">
+				<mx:HBox width="100%" backgroundColor="#F5FAFC">
+					<mx:Label text="Scoring method:" fontWeight="bold"/>
+				</mx:HBox>
+				<mx:HBox width="100%">
+					<mx:Spacer width="9"/>
+					<mx:CheckBox id="chkboxBLEU" label="BLEU/NIST" selected="true" width="83"/>
+					<comps:BrowseForFileBar id="bleuPath" width="100%" enabled="{chkboxBLEU.selected}" path="{_usrConfig.bleuPath}" pathSelected="bleuPath_pathSelectedHandler(event)"/>
+				</mx:HBox>
+				<mx:HBox width="100%">
+					<mx:Spacer width="9"/>
+					<mx:CheckBox id="chkboxMETEOR" label="METEOR" selected="true" width="83"/>
+					<comps:BrowseForFileBar id="meteorPath" width="100%" enabled="{chkboxMETEOR.selected}" path="{_usrConfig.meteorPath}" pathSelected="meteorPath_pathSelectedHandler(event)"/>
+				</mx:HBox>
+				<mx:HBox width="100%">
+					<mx:Spacer width="9"/>
+					<mx:CheckBox id="chkboxTER" label="TER" selected="true" width="83"/>
+					<comps:BrowseForFileBar id="terPath" width="100%" enabled="{chkboxTER.selected}" path="{_usrConfig.terPath}" pathSelected="terPath_pathSelectedHandler(event)"/>
+				</mx:HBox>
+				<mx:Repeater id="browseRep" dataProvider="{_labels}">
+					<comps:BrowseForFileBox id="selectFile" selectFileLabel="{String(browseRep.currentItem)}"/>
+				</mx:Repeater>
+			</mx:VBox>
+		</mx:HBox>
+		<comps:AddFileBox id="selectTargetFiles" selectFileLabel="Target file:"/>
+		<mx:Spacer width="100%"/>
+		<mx:Label text="Scoring Output:" fontWeight="bold"/>
+		<mx:TextArea id="output" width="100%" height="100%" editable="false" valueCommit="output_valueCommitHandler(event)"/>	
+	</mx:VBox>
+	<mx:ControlBar width="100%" enabled="false">
+		<mx:Button id="btnAbout" label="About" click="btnAbout_clickHandler(event)"/>
+		<mx:Spacer width="100%"/>
+		<mx:Button id="btnLog" label="View Log" click="btnLog_clickHandler(event)"/>
+		<mx:Button id="btnRun" label="Evaluate" click="btnRun_clickHandler(event)"/>
+	</mx:ControlBar>
+</mx:TitleWindow>

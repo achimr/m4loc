@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   width="700" height="600" layout="absolute" 
+			   showCloseButton="true" close="closeWin()" 
+			   title="View Logs" currentState="VisualView" 
+			   creationComplete="titlewindow1_creationCompleteHandler(event)" 
+			   currentStateChange="titlewindow1_currentStateChangeHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import com.Adobe.process.Process;
+			import com.Adobe.util.StringUtility;
+			import com.Adobe.util.XMLUtility;
+			
+			import mx.charts.chartClasses.Series;
+			import mx.charts.series.ColumnSeries;
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.events.StateChangeEvent;
+			import mx.managers.PopUpManager;
+			
+			[Bindable]
+			private var logList:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var logContent:String = new String();
+			
+			[Bindable]
+			private var logMatrix:ArrayCollection = new ArrayCollection();
+			
+			private var process:Process = new Process();
+			
+			
+			private function closeWin() : void
+			{
+				PopUpManager.removePopUp(this);
+			}
+						
+
+			protected function radioText_clickHandler(event:MouseEvent):void
+			{
+				currentState = "TextView";
+			}
+
+
+			protected function radioVisual_clickHandler(event:MouseEvent):void
+			{
+				currentState = "VisualView";
+			}
+
+
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{				
+				logList = process.getLogList();
+				
+				comboLogList.dispatchEvent(new ListEvent(ListEvent.CHANGE));
+			}
+
+
+			protected function comboLogList_changeHandler(event:ListEvent):void
+			{
+				logContent = process.getLogContent(event.currentTarget.text);
+				var strUtil:StringUtility = new StringUtility();
+				logMatrix = strUtil.string2ArrListCol(logContent);
+				
+				if (currentState == "VisualView")
+				{
+					var seriesLegend:Object = logMatrix.source.pop();
+					
+					scoreChart.callLater(addSeries);
+					
+					function addSeries():void
+					{
+						var series:Array = new Array();
+						
+						for each (var item:Object in seriesLegend)
+						{
+							
+							var colSeries:ColumnSeries = new ColumnSeries();
+							trace(item.toString());
+							colSeries.xField = "method";
+							colSeries.yField = item.toString();
+							colSeries.displayName = item.toString();
+							colSeries.setStyle("labelPosition", "outside");
+							
+							series.push(colSeries);
+						}
+						
+						scoreChart.series = series;
+						
+						chartLegend.dataProvider = scoreChart;
+					}
+				}
+			}
+
+
+			protected function titlewindow1_currentStateChangeHandler(event:StateChangeEvent):void
+			{
+				if (currentState == "VisualView")
+				{
+					comboLogList.callLater(changeMe);
+					
+					function changeMe():void
+					{
+						comboLogList.dispatchEvent(new ListEvent(ListEvent.CHANGE));
+					}
+				}
+			}
+
+		]]>
+	</fx:Script>
+	<mx:states>
+		<s:State name="TextView"/>
+		<s:State name="VisualView"/>
+	</mx:states>
+	<fx:Declarations>
+		<s:RadioButtonGroup id="radiogroup1"/>
+	</fx:Declarations>
+	<s:VGroup width="100%" height="100%" paddingBottom="10" paddingTop="10" paddingLeft="10" paddingRight="10">
+		<s:HGroup width="100%" verticalAlign="middle">
+			<mx:Label text="Select log: "/>
+			<mx:ComboBox id="comboLogList" dataProvider="{logList}" change="comboLogList_changeHandler(event)"/>
+			<mx:Spacer width="100%"/>
+			<mx:RadioButton label="Plain Text" groupName="radiogroup1" id="radioText" click="radioText_clickHandler(event)"/>
+			<mx:RadioButton label="Visual" groupName="radiogroup1" id="radioVisual" selected="true" click="radioVisual_clickHandler(event)"/>
+		</s:HGroup>
+		<mx:Spacer width="100%"/>
+		<s:HGroup id="mainView" width="100%" height="100%">
+			<s:TextArea width="100%" height="100%" includeIn="TextView" editable="false" text="{logContent}"/>
+			<s:VGroup width="100%" height="100%" includeIn="VisualView">
+				<mx:ColumnChart id="scoreChart" width="100%" height="100%" dataProvider="{logMatrix}" showDataTips="true">
+					<mx:horizontalAxis>
+						<mx:CategoryAxis categoryField="method"/>
+					</mx:horizontalAxis>
+				</mx:ColumnChart>
+				<mx:Legend id="chartLegend" dataProvider="{scoreChart}"/>
+			</s:VGroup>
+		</s:HGroup>
+	</s:VGroup>
+	<mx:ControlBar width="100%"/>
+</mx:TitleWindow>

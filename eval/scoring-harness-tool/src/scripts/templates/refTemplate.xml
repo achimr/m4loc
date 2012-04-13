@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mteval>
+<refset setid="example_set" srclang="*" trglang="*" refid="ref1">
+<doc docid="doc1" genre="nw">
+</doc>
+</refset>
+</mteval>

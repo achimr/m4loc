@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="100%">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.Adobe.managers.LanguageManager;
+			import com.Adobe.managers.ScriptMapManager;
+			
+			import flash.display.Sprite;
+			import flash.filesystem.*;
+			
+			import mx.controls.Alert;
+			import mx.controls.ProgressBar;
+			import mx.core.Application;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			private var _scriptMgr:ScriptMapManager = ScriptMapManager.getInstance();
+			private var _file:File = new File();
+			private var _browseForOpenTip:String = "Select your directory";
+						
+			
+			protected function btnBrowse_clickHandler(event:MouseEvent):void
+			{
+				try{
+					
+					_file.browseForDirectory(_browseForOpenTip);
+					
+					_file.addEventListener(Event.SELECT, onFileSelect);
+					
+				}catch ( err:Error ){
+					
+					Alert.show("Failed to open!");
+					
+				}
+				
+				function onFileSelect(event:Event):void
+				{
+					_file.removeEventListener(Event.SELECT, onFileSelect);
+					
+					location.text = event.target.nativePath;
+					
+					location.dispatchEvent(new Event(Event.CHANGE));
+					
+				}
+			}
+
+			protected function location_changeHandler(event:Event):void
+			{
+				var cPattern:RegExp = /corpus/i;
+				var mPattern:RegExp = /moses/i;
+				var oPattern:RegExp = /output/i;
+				trace(this.id);
+				if ( this.id.search(cPattern) != -1 )
+				{
+					_scriptMgr.corpusPath = event.target.text;
+					trace(_scriptMgr.corpusPath);
+				}
+				else if (this.id.search(mPattern) != -1 )
+				{
+					_scriptMgr.mosesPath = event.target.text;
+				}
+				else if (this.id.search(oPattern) != -1 )
+				{
+					_scriptMgr.outputPath = event.target.text;
+				}
+			}
+
+		]]>
+	</fx:Script>
+	<s:HGroup width="100%">
+		<mx:TextInput id="location" width="100%" change="location_changeHandler(event)"/>
+		<mx:Button id="btnBrowse" label="Browse..." click="btnBrowse_clickHandler(event)"/>		
+	</s:HGroup>
+</s:VGroup>

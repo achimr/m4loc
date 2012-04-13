@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:UI="com.Adobe.UI.*"
+			   xmlns:comps="com.Adobe.comps.*"
+			   title="Moses Training Harness Tool 1.0"
+			   close="titlewindow1_closeHandler(event)" 
+			   creationComplete="titlewindow1_creationCompleteHandler(event)"
+			   width="{this.parentApplication.width}" 
+			   height="{this.parentApplication.height}" 
+			   horizontalCenter="0" verticalCenter="0" 
+			   showCloseButton="true" verticalScrollPolicy="off">
+	<fx:Script>
+		<![CDATA[
+			import com.Adobe.config.UserConfig;
+			import com.Adobe.managers.LanguageManager;
+			import com.Adobe.managers.NetworkConnectionManager;
+			import com.Adobe.managers.ScriptMapManager;
+			
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.CursorManager;
+			import mx.managers.PopUpManager;
+			
+			import org.osmf.events.TimeEvent;
+			
+			[Bindable]
+			private var _langMgr:LanguageManager = LanguageManager.getInstance();
+			
+			[Bindable]
+			private var _usrConfig:UserConfig = UserConfig.getInstance();
+			private var _scriptMgr:ScriptMapManager = ScriptMapManager.getInstance();
+			
+			[Bindable]
+			private var _netwkMgr:NetworkConnectionManager = NetworkConnectionManager.getInstance();
+
+			protected function titlewindow1_closeHandler(event:CloseEvent):void
+			{
+				stage.nativeWindow.close();
+			}
+
+
+			protected function btnStart_clickHandler(event:MouseEvent):void
+			{
+				var paraObj:Object = new Object();
+				
+				paraObj["train_id"] = trainingID.text;
+				paraObj["lm_factor"] = lmFactor.text;
+				paraObj["lm_order"] = lmOrder.text;
+				paraObj["src_lang"] = srcLangList.selectedItem.toString();
+				paraObj["tar_lang"] = trgLangList.selectedItem.toString();
+				paraObj["train_corpus_name"] = trainingCorpusName.text;
+				paraObj["tune_corpus_name"] = tuningCorpusName.text;
+				paraObj["alignment"] = alignOption.text;
+				paraObj["reordering"] = reorderOption.text;
+				paraObj["irstlm"] = "0";
+				paraObj["kenlm"] = "1";
+				
+				_netwkMgr.sendCommand(event.currentTarget.label, paraObj);					
+			}
+
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				_scriptMgr.lmFactor = lmFactor.text;
+				_scriptMgr.lmOrder = lmOrder.text;
+				_scriptMgr.reorderOption = reorderOption.text;
+				_scriptMgr.alignOption = alignOption.text;
+				_scriptMgr.srcLang = srcLangList.selectedItem.toString();
+				_scriptMgr.trgLang = trgLangList.selectedItem.toString();
+				_scriptMgr.trainingCorpusName = trainingCorpusName.text;
+				
+				output.addEventListener(FlexEvent.VALUE_COMMIT, output_valueCommitHandler);
+			}
+			
+
+			protected function btnAbout_clickHandler(event:MouseEvent):void
+			{
+				var aboutWin:AboutWindow = new AboutWindow();
+				
+				PopUpManager.addPopUp(aboutWin, this, true);
+				PopUpManager.centerPopUp(aboutWin);
+			}
+
+
+			protected function btnComposeTrain_clickHandler(event:MouseEvent):void
+			{
+				output.text += "\n" + _scriptMgr.getTrainingScript();
+			}
+
+			protected function btnComposeTune_clickHandler(event:MouseEvent):void
+			{
+				output.text += "\n" + _scriptMgr.getTuningScript();
+			}
+			
+
+			protected function lmFactor_changeHandler(event:Event):void
+			{
+				_scriptMgr.lmFactor = event.target.text;
+			}
+
+			
+			protected function lmOrder_changeHandler(event:Event):void
+			{
+				_scriptMgr.lmOrder = event.target.text;
+			}
+			
+
+			protected function srcLangList_changeHandler(event:ListEvent):void
+			{
+				_scriptMgr.srcLang = event.target.selectedItem.toString();
+			}
+
+
+			protected function trgLangList_changeHandler(event:ListEvent):void
+			{
+				_scriptMgr.trgLang = event.target.selectedItem.toString();
+			}
+
+
+			protected function alignOption_changeHandler(event:Event):void
+			{
+				_scriptMgr.alignOption = event.target.text;
+			}
+
+
+			protected function reorderOption_changeHandler(event:Event):void
+			{
+				_scriptMgr.reorderOption = event.target.text;
+			}
+
+
+			protected function trainingCorpusName_changeHandler(event:Event):void
+			{
+				_scriptMgr.trainingCorpusName = event.target.text;
+			}
+
+
+			protected function tuningCorpusName_changeHandler(event:Event):void
+			{
+				_scriptMgr.tuningCorpusName = event.target.text;
+			}
+
+
+			protected function btnClearOutput_clickHandler(event:MouseEvent):void
+			{
+				_netwkMgr.clearOutput();
+			}
+
+
+			protected function output_valueCommitHandler(event:FlexEvent):void
+			{
+				callLater(refreshScrollPosition);
+				
+				function refreshScrollPosition():void
+				{
+					event.currentTarget.verticalScrollPosition = event.currentTarget.maxVerticalScrollPosition;
+				}
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:VGroup width="100%" height="100%">
+		<!--
+		<mx:VBox width="100%">
+			<mx:HBox styleName="bar" width="100%">
+				<mx:Label text="1. Select Moses Installation Path" fontWeight="bold"/>				
+			</mx:HBox>
+			<UI:SelectRawFileBar id="selectMosesPath"/>
+		</mx:VBox>
+		<mx:Spacer width="100%" height="10"/>
+		-->
+		<mx:HBox width="100%">
+			<mx:Label text="Please give your training an ID: " fontWeight="bold"/>
+			<mx:HBox styleName="bar" width="100%">
+				<mx:TextInput id="trainingID"/>
+			</mx:HBox>
+		</mx:HBox>
+		<mx:Spacer width="100%" height="10"/>
+		<mx:VBox width="100%">
+			<!--
+			<mx:HBox styleName="bar" width="100%">
+				<mx:Label text="2. Path to Language Model" fontWeight="bold"/>
+			</mx:HBox>
+			<UI:SelectRawFileBar id="selectLMPath"/>
+			-->
+			<mx:Label text="1. LM parameters" fontWeight="bold"/>
+			<mx:HBox styleName="bar" width="100%">
+				<mx:TextInput id="lmFactor" text="0" change="lmFactor_changeHandler(event)"/>
+				<mx:Text text=":"/>
+				<mx:TextInput id="lmOrder" text="3" change="lmOrder_changeHandler(event)"/>
+				<mx:Text text=":"/>
+			</mx:HBox>
+		</mx:VBox>
+		<mx:Spacer width="100%" height="10"/>
+		<mx:VBox width="100%">
+			<!--
+			<mx:HBox styleName="bar" width="100%">
+				<mx:Label text="Corpus name" fontWeight="bold"/>				
+			</mx:HBox>
+			<UI:SelectRawFileBar id="selectCorpusPath"/>
+			-->
+			<mx:Label text="2. Corpus File Name" fontWeight="bold"/>
+			<mx:HBox styleName="bar" width="100%">
+				<mx:Label text="Training: "/>
+				<mx:TextInput id="trainingCorpusName" text="news-commentary.clean" change="trainingCorpusName_changeHandler(event)"/>
+				<mx:Label text="Tuning: "/>
+				<mx:TextInput id="tuningCorpusName" text="nc-dev2007.lowercased" change="tuningCorpusName_changeHandler(event)"/>
+			</mx:HBox>
+		</mx:VBox>	
+		<mx:Spacer width="100%" height="10"/>
+		<mx:VBox width="100%">
+			<mx:HBox styleName="bar" width="100%">
+				<mx:Label text="3. Select Source and Target Languages" fontWeight="bold"/>				
+			</mx:HBox>
+			<mx:HBox>
+				<mx:ComboBox id="srcLangList" dataProvider="{_langMgr.allLanguages}" selectedItem="{_usrConfig.coreLanguage}" change="srcLangList_changeHandler(event)"/>
+				<mx:ComboBox id="trgLangList" dataProvider="{_langMgr.allLanguages}" selectedItem="{_usrConfig.coreLanguage}" change="trgLangList_changeHandler(event)"/>
+			</mx:HBox>
+		</mx:VBox>	
+		<mx:Spacer width="100%" height="10"/>
+		<mx:VBox width="100%">
+			<mx:HBox styleName="bar" width="100%">
+				<mx:Label text="4. Default Alignment and Options" fontWeight="bold"/>				
+			</mx:HBox>
+			<mx:TextInput id="alignOption" width="100%" text="grow-diag-final-and" change="alignOption_changeHandler(event)"/>
+		</mx:VBox>	
+		<mx:Spacer width="100%" height="10"/>
+		<mx:VBox width="100%">
+			<mx:HBox styleName="bar" width="100%">
+				<mx:Label text="5. Default Reordering and Options" fontWeight="bold"/>				
+			</mx:HBox>
+			<mx:TextInput id="reorderOption" width="100%" text="msd-bidirectional-fe" change="reorderOption_changeHandler(event)"/>
+		</mx:VBox>	
+		<!--
+		<mx:Spacer width="100%" height="10"/>
+		<mx:VBox width="100%">
+			<mx:HBox styleName="bar" width="100%">
+				<mx:Label text="7. Working Folder for Output" fontWeight="bold"/>				
+			</mx:HBox>
+			<UI:SelectRawFileBar id="selectOutputPath"/>
+		</mx:VBox>
+		-->
+		<mx:Spacer width="100%" height="10"/>
+		<mx:HBox width="100%" height="100%" verticalAlign="middle">
+			<mx:TextArea id="output" width="100%" height="100%" editable="false" 
+						 contentBackgroundColor="black" color="white" text="{_netwkMgr.output}"/>
+			<!--
+			<mx:VBox>
+				<mx:Button id="btnComposeTrain" label="Compose for Training" click="btnComposeTrain_clickHandler(event)"/>
+				<mx:Button id="btnComposeTune" label="Compose for Tuning" click="btnComposeTune_clickHandler(event)"/>			
+			</mx:VBox>
+			-->
+		</mx:HBox>
+	</s:VGroup>
+	<mx:ControlBar width="100%" enabled="false">
+		<mx:Button id="btnAbout" label="About" click="btnAbout_clickHandler(event)"/>
+		<mx:Spacer width="100%"/>
+		<mx:Button id="btnClearOutput" label="Clear Output" click="btnClearOutput_clickHandler(event)"/>
+		<mx:VRule height="20"/>
+		<mx:Button id="btnTrainTune" label="Train+Tune" click="btnStart_clickHandler(event)"/>
+		<mx:Button id="btnTrain" label="Train" click="btnStart_clickHandler(event)"/>
+		<mx:Button id="btnTune" label="Tune" click="btnStart_clickHandler(event)"/>
+	</mx:ControlBar>
+</mx:TitleWindow>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<stepBox:StepBoxBase xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					 xmlns:s="library://ns.adobe.com/flex/spark" 
+					 xmlns:mx="library://ns.adobe.com/flex/mx" 
+					 xmlns:stepBox="com.Adobe.comps.stepBox.*"
+					 creationComplete="hgroup1_creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import com.Adobe.events.StepEvent;
+			
+			import mx.events.FlexEvent;
+			import mx.events.NumericStepperEvent;
+			
+			
+			override public function set selected(value:Boolean):void
+			{
+				clean_weird_pair.selected = value;
+			}
+			
+			override public function get selected():Boolean
+			{
+				return clean_weird_pair.selected;
+			}
+			
+			public function set threshold(value:uint):void
+			{
+				srcTargRatio.value = value;
+			}
+			
+			public function get threshold():uint
+			{
+				return srcTargRatio.value;
+			}
+						
+
+			protected function hgroup1_creationCompleteHandler(event:FlexEvent):void
+			{
+				addEventListener(StepEvent.Step_Order_Changed, StepOrderChangeHandler);
+			}
+			
+			protected function StepOrderChangeHandler(event:StepEvent):void
+			{
+				stepID.text = "Step " + (parent.getChildIndex(this)+1)/2 + ".";
+			}
+
+
+			protected function clean_weird_pair_changeHandler(event:Event):void
+			{
+				dispatchEvent(new StepEvent(StepEvent.Step_State_Changed));
+			}
+
+
+			protected function srcTargRatio_changeHandler(event:NumericStepperEvent):void
+			{
+				var parameters:Array = new Array("0");
+				
+				parameters.push(event.target.value);
+				
+				dispatchEvent(new StepEvent(StepEvent.Step_Parameter_Changed,parameters));
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:VGroup width="100%">
+		<s:HGroup width="100%" verticalAlign="middle">
+			<mx:Label id="stepID" text="Step {this.defaultOrder}." fontWeight="bold"/>
+			<mx:CheckBox id="clean_weird_pair" 
+						 label="Clean weird aligned pairs" change="clean_weird_pair_changeHandler(event)"/>
+		</s:HGroup>
+		<s:VGroup width="100%" id="clean_weird_pair_option" enabled="{clean_weird_pair.selected}">
+			<s:HGroup width="100%" verticalAlign="middle">
+				<s:VGroup width="65" height="100%"/>
+				<mx:CheckBox id="srcTargRatioBox" 
+							 label="source/target lengh difference larger than" 
+							 selected="true"/>
+				<mx:NumericStepper id="srcTargRatio" 
+								   minimum="0" maximum="200" stepSize="1" 
+								   enabled="{srcTargRatioBox.selected}" 
+								   change="srcTargRatio_changeHandler(event)"/>
+				<!--
+				<mx:CheckBox id="srcTargRatioBox" label="source/target ratio larger than" selected="true"/>
+				<mx:NumericStepper id="srcTargRatio" value="2.0" stepSize="0.1" enabled="{srcTargRatioBox.selected}"/>
+				-->
+			</s:HGroup>
+			<!--
+			<s:HGroup width="100%" verticalAlign="middle" enabled="false">
+			<s:VGroup width="65" height="100%"/>
+			<mx:CheckBox id="targSrcRatioBox" label="source/target ratio smaller than" selected="false"/>
+			<mx:NumericStepper id="targSrcRatio" value="0.5" maximum="1" stepSize="0.1" enabled="{targSrcRatioBox.selected}"/>
+			</s:HGroup>
+			-->
+		</s:VGroup>			
+	</s:VGroup>
+</stepBox:StepBoxBase>

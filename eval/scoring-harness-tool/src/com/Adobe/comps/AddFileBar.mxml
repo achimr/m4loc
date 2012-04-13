@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:HBox xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="100%" xmlns:comps="com.Adobe.comps.*" verticalAlign="middle">
+
+	<fx:Script>
+		<![CDATA[
+			
+			import mx.core.FlexGlobals;
+			
+			protected function btnRemove_clickHandler(event:MouseEvent):void
+			{
+				if (event.currentTarget.parent.parent.numChildren > 2)
+				{
+					event.currentTarget.parent.parent.removeChild(event.currentTarget.parent);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<fx:Model id="engines" source="assets/MachineTranslationEngines.xml"/>
+		<mx:StringValidator source="{engineID}" property="text" requiredFieldError="Required field!" trigger="{FlexGlobals.topLevelApplication.appUI.btnRun}" triggerEvent="click" />
+	</fx:Declarations>
+	<comps:BrowseForFileBar id="targetFile"/>
+	<mx:ComboBox id="engineType" dataProvider="{engines.engine}"/>
+	<mx:Label text="ID"/>
+	<mx:TextInput id="engineID" width="50"/>
+	<mx:Button id="btnRemove" styleName="removeButton" toolTip="Remove target file" click="btnRemove_clickHandler(event)"/>
+</mx:HBox>

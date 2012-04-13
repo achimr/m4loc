@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:HBox xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="100%">
+
+	<fx:Metadata>
+		[Event(name="pathSelected",type="flash.events.Event")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import flash.display.Sprite;
+			import flash.filesystem.*;
+			
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.FileEvent;
+			import mx.events.FlexEvent;
+			
+			private var _file:File = new File();
+			private var _browseForOpenTip:String = "Select file to open";
+			
+			[Bindable]
+			private var _path:String = new String();
+			
+			protected function btnBrowse_clickHandler(clickEvent:MouseEvent):void
+			{
+				try{
+					
+					_file.browseForOpen(_browseForOpenTip);
+					
+					_file.addEventListener(Event.SELECT, onFileSelect);
+					
+				}catch ( err:Error ){
+					
+					Alert.show("Failed to open!");
+					
+				}
+				
+				function onFileSelect(selectEvent:Event):void
+				{
+					_file.removeEventListener(Event.SELECT, onFileSelect);
+										
+					_path = (selectEvent.target as File).nativePath;
+					
+					dispatchEvent(new Event("pathSelected"));
+				}
+			}
+
+			protected function hbox1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+			}
+			
+			public function set path(filePath:String):void
+			{
+				_path = filePath;
+			}
+			
+			[Bindable]
+			public function get path():String
+			{
+				return _path;
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		<mx:StringValidator source="{location}" property="text" requiredFieldError="Required field!" trigger="{FlexGlobals.topLevelApplication.appUI.btnRun}" triggerEvent="click" />
+	</fx:Declarations>
+
+	<mx:TextInput id="location" width="100%" text="{_path}"/>
+	<mx:Button id="btnBrowse" label="Browse..." click="btnBrowse_clickHandler(event)"/>
+</mx:HBox>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<languages>
+	<language id="en_us">en-US</language>
+	<language id="en_gb">en-GB</language>
+	<language id="fr_fr">fr-FR</language>
+	<language id="de_de">de-DE</language>
+	<language id="ja_jp">ja-JP</language>
+	<language id="es_es">es-ES</language>
+	<language id="it_it">it-IT</language>
+	<language id="nl_nl">nl-NL</language>
+	<language id="sv_se">sv-SE</language>
+	<language id="pt_br">pt-BR</language>
+	<language id="da_dk">da-DK</language>
+	<language id="fi_fi">fi-FI</language>
+	<language id="no_no">no-NO</language>
+	<language id="nb_no">nb-NO</language>
+	<language id="ko_kr">ko-KR</language>
+	<language id="zh_cn">zh-CN</language>
+	<language id="zh_tw">zh-TW</language>
+	<language id="he_il">he-IL</language>
+	<language id="ar_ae">ar-AE</language>
+	<language id="hu_hu">hu-HU</language>
+	<language id="tr_tr">tr-TR</language>
+	<language id="cs_cz">cs-CZ</language>
+	<language id="pl_pl">pl-PL</language>
+	<language id="el_gr">el-GR</language>
+	<language id="ru_ru">ru-RU</language>
+	<language id="ro_ro">ro-RO</language>
+	<language id="uk_ua">uk-UA</language>	
+	<language id="sl_si">sl-SI</language>	
+	<language id="hr_hr">hr-HR</language>
+	<language id="bg_bg">bg-BG</language>
+	<language id="lv_lv">lv-LV</language>
+	<language id="lt_lt">lt-LT</language>
+	<language id="sk_sk">sk-SK</language>
+</languages>

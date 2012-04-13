@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:UI="com.Adobe.UI.*"
+			   xmlns:comps="com.Adobe.comps.*"
+			   title="TMX To Moses Corpus Tool 1.0"
+			   close="titlewindow1_closeHandler(event)" 
+			   creationComplete="titlewindow1_creationCompleteHandler(event)"
+			   width="{this.parentApplication.width}" 
+			   height="{this.parentApplication.height}" 
+			   horizontalCenter="0" verticalCenter="0" 
+			   showCloseButton="true" verticalScrollPolicy="off">
+	<fx:Script>
+		<![CDATA[
+			import com.Adobe.config.ProcessConfig;
+			import com.Adobe.config.UserConfig;
+			import com.Adobe.events.LanguageSelectedEvent;
+			import com.Adobe.file.FileUtil;
+			import com.Adobe.managers.LanguageManager;
+			import com.Adobe.managers.UserConfigManager;
+			import com.Adobe.process.ConversionProcess;
+			
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.CursorManager;
+			import mx.managers.PopUpManager;
+			
+			import org.osmf.events.TimeEvent;
+			
+			private var _langMgr:LanguageManager = LanguageManager.getInstance();
+			private var _usrConfig:UserConfig = UserConfig.getInstance();
+			private var _usrConfigMgr:UserConfigManager = UserConfigManager.getInstance();
+			private var _convConfig:ProcessConfig = ProcessConfig.getInstance();
+
+			protected function titlewindow1_closeHandler(event:CloseEvent):void
+			{
+				stage.nativeWindow.close();
+			}
+
+
+			protected function btnConvert_clickHandler(event:MouseEvent):void
+			{
+				if ( selectFile.selectedTMXs.length != 0 )
+				{
+					var process:ConversionProcess = new ConversionProcess();
+					
+					process.start(_usrConfigMgr.configFile);					
+				}
+			}
+			
+
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				this.addEventListener(LanguageSelectedEvent.Languages_Selected, langSelectedhandler);				
+			}
+			
+			protected function langSelectedhandler(event:LanguageSelectedEvent):void
+			{
+				convertStepsBox.langList.dataProvider = event.languages;
+			}
+
+
+			protected function btnConfig_clickHandler(event:MouseEvent):void
+			{
+				var configWin:ConfigDialog = new ConfigDialog();
+				
+				PopUpManager.addPopUp(configWin, this, true);
+				PopUpManager.centerPopUp(configWin);
+			}
+
+
+			protected function btnAbout_clickHandler(event:MouseEvent):void
+			{
+				var aboutWin:AboutWindow = new AboutWindow();
+				
+				PopUpManager.addPopUp(aboutWin, this, true);
+				PopUpManager.centerPopUp(aboutWin);
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:VGroup width="100%">
+		<mx:HBox width="100%">
+			<comps:SectionBar barLabel="1. Select TMX file(s) to Convert: "/>
+			<UI:SelectRawFileBar id="selectFile" width="100%"/>
+		</mx:HBox>
+		<mx:VBox width="100%" enabled="false">
+			<comps:SectionBar barLabel="2. Select file output types: "/>
+			<mx:HBox>
+				<mx:CheckBox label="Aligned Monolingual (Moses Style)" selected="true"/>
+				<mx:CheckBox label=".bitext (Systran Style)" selected="false"/>
+			</mx:HBox>
+		</mx:VBox>
+		<mx:VBox id="convertStepsArea" width="100%">
+			<comps:SectionBar barLabel="3. Select Cleaning Steps: "/>
+			<UI:ConvertStepsBox id="convertStepsBox"/>
+		</mx:VBox>
+	</s:VGroup>
+	<mx:ControlBar width="100%" enabled="false">
+		<mx:Button id="btnConfig" label="Config" click="btnConfig_clickHandler(event)"/>
+		<mx:Button id="btnAbout" label="About" click="btnAbout_clickHandler(event)"/>
+		<mx:Spacer width="100%"/>
+		<mx:Button label="View Log"/>
+		<mx:Button id="btnConvert" label="Convert" click="btnConvert_clickHandler(event)"/>
+	</mx:ControlBar>
+</mx:TitleWindow>

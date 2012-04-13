@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   width="350" height="200" layout="absolute" 
+			   showCloseButton="true" close="closeWin()" 
+			   title="About">
+	<fx:Script>
+		<![CDATA[
+			
+			import mx.managers.PopUpManager;
+			
+			[Bindable]
+			private var appXml:XML = NativeApplication.nativeApplication.applicationDescriptor;
+			private var ns:Namespace = appXml.namespace();
+			
+			private function closeWin() : void
+			{
+				PopUpManager.removePopUp(this);
+			}
+						
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:HGroup width="100%" height="100%" paddingBottom="10" paddingTop="10" paddingLeft="10" paddingRight="10">
+		<s:VGroup width="30%" height="100%" fontWeight="bold" horizontalAlign="right">
+			<mx:Label text="Build:"/>
+			<!--<mx:Label text="Release Date:"/>-->
+			<mx:Label text="Author:"/>
+		</s:VGroup>
+		<s:VGroup width="70%" height="100%">
+			<mx:Text text="{appXml.ns::version[0]}"/>
+			<!--<mx:Text text="2011/03/18"/>-->
+			<mx:Text text="Yu Gong (vgong@adobe.com)"/>
+			<mx:Text text="Li Jiang (ljiang@adobe.com)"/>
+		</s:VGroup>
+	</s:HGroup>
+</mx:TitleWindow>

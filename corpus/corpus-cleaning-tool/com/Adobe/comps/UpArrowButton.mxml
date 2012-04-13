@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<s:Button xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" 
+		  skinClass="assets.skins.UpArrowButtonSkin" width="18" height="18" 
+		  click="button1_clickHandler(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import com.Adobe.config.UserConfig;
+			import com.Adobe.events.StepEvent;
+			import com.Adobe.managers.ProcessConfigManager;
+			
+			private var _processConfigMgr:ProcessConfigManager = ProcessConfigManager.getInstance();
+			private var _usrConfig:UserConfig = UserConfig.getInstance();
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				var curChildIndex:int = parentDocument.stepContainer.getElementIndex(event.currentTarget.parent.parent);
+				
+				if ( curChildIndex > 1 )
+				{
+					if (parentDocument.langList.selectedIndex != -1)
+					{
+						parentDocument.stepContainer.swapElementsAt(curChildIndex - 2, curChildIndex);
+						_processConfigMgr.swapStepsAt(parentDocument.langList.selectedItem.toString(), (curChildIndex - 2 + 1)/2, (curChildIndex + 1)/2);
+						parentDocument.stepContainer.getElementAt(curChildIndex).dispatchEvent(new StepEvent(StepEvent.Step_Order_Changed));
+						parentDocument.stepContainer.getElementAt(curChildIndex - 2).dispatchEvent(new StepEvent(StepEvent.Step_Order_Changed));
+					}
+				}		
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+</s:Button>

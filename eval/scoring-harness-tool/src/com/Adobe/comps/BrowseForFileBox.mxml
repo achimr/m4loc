@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:HBox xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="100%" xmlns:comps="com.Adobe.comps.*">
+
+	<fx:Script>
+		<![CDATA[
+			protected function btnRemove_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<fx:Model id="engines" source="assets/MachineTranslationEngines.xml"/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+						
+			[Bindable]
+			private var _browseForOpenLabel:String = "";
+									
+			public function set selectFileLabel(label:String):void
+			{
+				_browseForOpenLabel = label;
+			}
+			
+			[Bindable]
+			public function get selectFileLabel():String
+			{
+				return _browseForOpenLabel;
+			}
+			
+		]]>
+	</fx:Script>
+	<mx:Label text="{_browseForOpenLabel}" fontWeight="bold" width="100"/>
+	<comps:BrowseForFileBar id="browse"/>
+</mx:HBox>

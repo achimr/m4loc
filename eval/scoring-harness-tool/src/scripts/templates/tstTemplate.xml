@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mteval>
+<tstset setid="example_set" srclang="*" trglang="*" sysid="sample_system">
+<doc docid="doc1" genre="nw">
+</doc>
+</tstset>
+</mteval>

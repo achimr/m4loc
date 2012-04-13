@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<stepBox:StepBoxBase xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					 xmlns:s="library://ns.adobe.com/flex/spark" 
+					 xmlns:mx="library://ns.adobe.com/flex/mx" 
+					 xmlns:stepBox="com.Adobe.comps.stepBox.*"
+					 creationComplete="hgroup1_creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import com.Adobe.events.StepEvent;
+			
+			import mx.events.FlexEvent;
+						
+			override public function set selected(value:Boolean):void
+			{
+				clean_url.selected = value;
+			}
+			
+			override public function get selected():Boolean
+			{
+				return clean_url.selected;
+			}
+			
+			protected function hgroup1_creationCompleteHandler(event:FlexEvent):void
+			{
+				addEventListener(StepEvent.Step_Order_Changed, StepOrderChangeHandler);
+			}
+			
+			protected function StepOrderChangeHandler(event:StepEvent):void
+			{
+				stepID.text = "Step " + (parent.getChildIndex(this)+1)/2 + ".";
+			}
+
+
+			protected function clean_url_changeHandler(event:Event):void
+			{
+				dispatchEvent(new StepEvent(StepEvent.Step_State_Changed));
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<mx:Label id="stepID" text="Step {this.defaultOrder}." fontWeight="bold"/>
+		<mx:CheckBox id="clean_url" 
+					 label="Clean URLs" change="clean_url_changeHandler(event)"/>
+	</s:HGroup>
+</stepBox:StepBoxBase>

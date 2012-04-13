@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   title="Configuration" showCloseButton="false"
+			   width="600" height="400" verticalScrollPolicy="off">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.Adobe.config.UserConfig;
+			import com.Adobe.managers.LanguageManager;
+			import com.Adobe.managers.UserConfigManager;
+			
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+						
+			[Bindable]
+			private var _usrConfig:UserConfig = UserConfig.getInstance();
+			
+			[Bindable]
+			private var _langMgr:LanguageManager = LanguageManager.getInstance();
+			
+			private var _usrConfigMgr:UserConfigManager = UserConfigManager.getInstance();
+			
+			protected function btnLingBrowse_clickHandler(event:MouseEvent):void
+			{
+				var _file:File = new File();
+				
+				_file.addEventListener(Event.SELECT, onFileSelect);
+				
+				try{
+					
+					_file.browseForDirectory('Browse For Open');
+					
+				}catch ( err:Error ){
+					
+					Alert.show("Failed to open!");
+					
+				}
+				
+				function onFileSelect(event:Event):void
+				{
+					lingLocation.text = event.target.nativePath;
+					_file.removeEventListener(Event.SELECT, onFileSelect);
+				}
+			}
+			
+			protected function btnMosesBrowse_clickHandler(event:MouseEvent):void
+			{
+				var _file:File = new File();
+				
+				_file.addEventListener(Event.SELECT, onFileSelect);
+				
+				try{
+					
+					_file.browseForDirectory('Browse For Open');
+					
+				}catch ( err:Error ){
+					
+					Alert.show("Failed to open!");
+					
+				}
+				
+				function onFileSelect(event:Event):void
+				{
+//					mosesLocation.text = event.target.nativePath;
+					_file.removeEventListener(Event.SELECT, onFileSelect);
+				}
+			}
+			
+			protected function btnSegBrowse_clickHandler(event:MouseEvent):void
+			{
+				var _file:File = new File();
+				
+				_file.addEventListener(Event.SELECT, onFileSelect);
+				
+				try{
+					
+					_file.browseForDirectory('Browse For Open');
+					
+				}catch ( err:Error ){
+					
+					Alert.show("Failed to open!");
+					
+				}
+				
+				function onFileSelect(event:Event):void
+				{
+					chsSegLocation.text = event.target.nativePath;
+					_file.removeEventListener(Event.SELECT, onFileSelect);
+				}
+			}
+			
+			protected function btnOK_ClickHandler(event:Event):void
+			{
+				PopUpManager.removePopUp(this);
+				
+				try
+				{
+					_usrConfig.exportPath = lingLocation.text;					
+				}
+				catch(error:TypeError)
+				{
+					Alert.show("Output folder not configured!");
+				}
+				
+				try
+				{
+					_usrConfig.coreLanguage = coreLangList.text;
+				}
+				catch(error:TypeError)
+				{
+					
+				}
+				
+				try
+				{
+					_usrConfig.chsSegmenterPath = chsSegLocation.text;					
+				}
+				catch(error:TypeError)
+				{
+					Alert.show("Chinese Segmenter installation path not configured!");
+				}
+				
+				try
+				{
+					_usrConfig.chsSegmentationStandard = _usrConfig.chsSegmentationStandards.getItemAt(chsSegStandardList.selectedIndex).id;					
+				}
+				catch(error:TypeError)
+				{
+					
+				}
+				
+				_usrConfigMgr.updConfig();
+			}
+			
+			protected function btnCancel_ClickHandler(event:Event):void
+			{
+				PopUpManager.removePopUp(this);
+			}
+
+		]]>
+	</fx:Script>
+	<mx:TabNavigator width="100%" height="100%">
+		<s:NavigatorContent label="Export Location" width="100%" height="100%">
+			<s:VGroup width="100%" height="100%">
+				<s:HGroup width="100%">
+					<mx:Text text="Please select your export path:" fontWeight="bold"/>				
+				</s:HGroup>
+				<s:HGroup width="100%">
+					<mx:TextInput id="lingLocation" text="{_usrConfig.exportPath}" width="100%"/>
+					<mx:Button id="btnLingBrowse" label="Browse..." click="btnLingBrowse_clickHandler(event)"/>		
+				</s:HGroup>
+			</s:VGroup>
+		</s:NavigatorContent>
+		<s:NavigatorContent label="Language" width="100%" height="100%">
+			<s:VGroup width="100%" height="100%">
+				<s:HGroup width="100%">
+					<mx:Text text="Please select your source language:" fontWeight="bold"/>
+					<mx:ComboBox id="coreLangList" dataProvider="{_langMgr.allLanguages}" selectedItem="{_usrConfig.coreLanguage}"/>
+				</s:HGroup>
+			</s:VGroup>
+		</s:NavigatorContent>
+		<s:NavigatorContent label="Extensions" width="100%" height="100%">
+			<s:VGroup width="100%" height="100%">
+				<s:HGroup width="100%">
+					<mx:Text text="Please select your Chinese word segmenter installation path:" fontWeight="bold"/>				
+				</s:HGroup>
+				<s:HGroup width="100%">
+					<mx:TextInput id="chsSegLocation" text="{_usrConfig.chsSegmenterPath}" width="100%"/>
+					<mx:Button id="btnSegBrowse" label="Browse..." click="btnSegBrowse_clickHandler(event)"/>		
+				</s:HGroup>
+				<mx:Spacer width="100%"/>
+				<s:HGroup width="100%">
+					<mx:Text text="Please select the Chinese word segmentation standard:" fontWeight="bold"/>				
+				</s:HGroup>
+				<s:HGroup width="100%">
+					<mx:ComboBox id="chsSegStandardList" dataProvider="{_usrConfig.chsSegmentationStandardsDesc}" selectedItem="{_usrConfig.chsSegmentationStandardDesc}"/>
+				</s:HGroup>
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<mx:ControlBar>
+		<mx:Spacer width="100%"/>
+		<mx:Button label="OK" click="btnOK_ClickHandler(event)"/>
+		<mx:Button label="Cancel" click="btnCancel_ClickHandler(event)"/>		
+	</mx:ControlBar>
+</mx:TitleWindow>

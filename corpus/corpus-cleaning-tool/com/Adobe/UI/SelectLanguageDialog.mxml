@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   title="Set up your conversion" showCloseButton="false"
+			   width="500" height="400" verticalScrollPolicy="off" 
+			   creationComplete="titlewindow1_creationCompleteHandler(event)">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<mx:Validator id="prjValidator" source="{prjName}" property="text" trigger="{btnOK}" triggerEvent="click"/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.Adobe.config.ProcessConfig;
+			import com.Adobe.config.UserConfig;
+			import com.Adobe.events.LanguageSelectedEvent;
+			import com.Adobe.managers.LanguageManager;
+			import com.Adobe.managers.ProcessConfigManager;
+			import com.Adobe.managers.UserConfigManager;
+			
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.events.ValidationResultEvent;
+			import mx.managers.PopUpManager;
+			import mx.controls.Alert;
+			
+			[Bindable]
+			private var _langMgr:LanguageManager = LanguageManager.getInstance();
+			
+			private var _convConfig:ProcessConfig = ProcessConfig.getInstance();
+			
+			[Bindable]
+			private var _usrConfig:UserConfig = UserConfig.getInstance();
+			
+			private var _usrConfigMgr:UserConfigManager = UserConfigManager.getInstance();
+			
+			private var _convConfigMgr:ProcessConfigManager = ProcessConfigManager.getInstance();
+			
+			protected function language_changeHandler(event:Event):void
+			{
+				if (event.currentTarget.selected == true)
+				{
+					if (_langMgr.selectedLanguages.indexOf(event.currentTarget.getRepeaterItem().toString()) == -1)
+					{
+						_langMgr.selectedLanguages.push(event.currentTarget.getRepeaterItem().toString());
+					}
+				}
+				else
+				{
+					if (_langMgr.selectedLanguages.indexOf(event.currentTarget.getRepeaterItem().toString()) != -1)
+					{
+						_langMgr.selectedLanguages.splice(_langMgr.selectedLanguages.indexOf(event.currentTarget.getRepeaterItem().toString()),1);
+					}
+				}				
+			}
+			
+			protected function btnOK_ClickHandler(event:Event):void
+			{
+				var validateEvent:ValidationResultEvent = prjValidator.validate();
+				
+				if ( validateEvent.type == ValidationResultEvent.VALID )
+				{
+					if ( _langMgr.selectedLanguages.length > 0 )
+					{
+						_convConfig.projectName = prjName.text;
+						
+						PopUpManager.removePopUp(this);
+						
+						_usrConfigMgr.saveConfig(this.parentApplication.appUI.selectFile.selectedTMXs);
+						
+						for ( var i:int = 0; i < _langMgr.selectedLanguages.length; i ++ )
+						{
+							_convConfigMgr.saveDefaultProcess(_langMgr.selectedLanguages[i]);
+						}
+						
+						this.parentApplication.appUI.convertStepsArea.enabled = true;
+						this.parentApplication.appUI.dispatchEvent(new LanguageSelectedEvent(LanguageSelectedEvent.Languages_Selected,_langMgr.selectedLanguages));
+						this.parentApplication.appUI.convertStepsBox.langList.dispatchEvent(new ListEvent(ListEvent.CHANGE));						
+					}
+					else
+					{
+						Alert.show("Please select language(s)!");
+					}
+				}
+			}
+			
+			protected function btnCancel_ClickHandler(event:Event):void
+			{
+				_langMgr.selectedLanguages.length = 0;
+				
+				PopUpManager.removePopUp(this);
+			}
+			
+
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				_langMgr.selectedLanguages.length = 0;
+			}
+
+		]]>
+	</fx:Script>
+	<s:VGroup width="100%" height="100%">
+		<s:HGroup width="100%">
+			<mx:Text text="1. Input your project name:" fontWeight="bold"/>
+			<mx:TextInput id="prjName"/>
+		</s:HGroup>
+		<s:HGroup width="100%">
+			<mx:Text text="2. Please select the language(s) you want to convert." fontWeight="bold"/>				
+		</s:HGroup>
+		<mx:Tile width="100%" height="100%">
+			<mx:Repeater id="langRep" dataProvider="{_langMgr.allLanguages}">
+				<mx:CheckBox id="language" label="{langRep.currentItem}" 
+							 change="language_changeHandler(event)" 
+							 enabled="{langRep.currentItem.toString() != _usrConfig.coreLanguage}"/>
+			</mx:Repeater>						
+		</mx:Tile>	
+	</s:VGroup>
+	<mx:ControlBar>
+		<mx:Spacer width="100%"/>
+		<mx:Button id="btnOK" label="OK" click="btnOK_ClickHandler(event)"/>
+		<mx:Button id="btnCancel" label="Cancel" click="btnCancel_ClickHandler(event)"/>		
+	</mx:ControlBar>
+</mx:TitleWindow>

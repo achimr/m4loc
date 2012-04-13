@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" 
+					   xmlns:UI="com.Adobe.UI.*"
+					   showFlexChrome="false" width="800" height="725" layout="absolute" 
+					   creationComplete="windowedapplication1_creationCompleteHandler(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import air.update.ApplicationUpdaterUI;
+			import air.update.events.UpdateEvent;
+			
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			
+			private var appUpdater:ApplicationUpdaterUI = new ApplicationUpdaterUI();
+			
+			protected function hgroup1_mouseDownHandler(event:MouseEvent):void
+			{
+				stage.nativeWindow.startMove();
+			}
+
+			protected function windowedapplication1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// Check for update
+				
+				appUpdater.updateURL = "http://10.162.146.105/moses/updater/scoring_client_update.xml";
+				
+				appUpdater.addEventListener(UpdateEvent.INITIALIZED, onUpdate);
+				appUpdater.addEventListener(ErrorEvent.ERROR, onError);
+				
+				appUpdater.isCheckForUpdateVisible = false;
+				appUpdater.isFileUpdateVisible = false;
+				appUpdater.isInstallUpdateVisible = false;
+				
+				appUpdater.initialize();
+				
+			}
+
+			private function onUpdate(event:UpdateEvent):void 
+			{
+				appUpdater.checkNow();
+			}
+			
+			private function onError(event:ErrorEvent):void 
+			{
+				Alert.show(event.toString());
+			}
+			
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Style source="Stylesheet.css"/>
+	<UI:ApplicationUI id="appUI"/>
+	<s:HGroup y="15" width="{appUI.width - 40}" height="35" mouseDown="hgroup1_mouseDownHandler(event)"/>
+</mx:WindowedApplication>

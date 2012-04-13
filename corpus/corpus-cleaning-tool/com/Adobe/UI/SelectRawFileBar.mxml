@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//    Copyright 2012 Adobe Systems Incorporated
+//
+//    This file is part of TMX to Moses Corpus Tool.
+// 
+//    TMX to Moses Corpus Tool is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Lesser General Public License as published by the 
+//    Free Software Foundation, either version 3 of the License, or (at your option) 
+//    any later version.
+// 
+//    TMX to Moses Corpus Tool is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+//    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+//    more details.
+// 
+//    You should have received a copy of the GNU Lesser General Public License along 
+//    with TMX to Moses Corpus Tool.  If not, see <http://www.gnu.org/licenses/>.
+//
+//////////////////////////////////////////////////////////////////////////////////////
+-->
+
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="100%">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.Adobe.managers.LanguageManager;
+			
+			import flash.display.Sprite;
+			import flash.filesystem.*;
+			
+			import mx.controls.Alert;
+			import mx.controls.ProgressBar;
+			import mx.core.Application;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			public var selectedTMXs:Array = new Array();
+			
+			private var _file:File = new File();
+			private var _fileTypeFilter:FileFilter = new FileFilter("TMX files (*.tmx)", "*.tmx");
+			private var _browseForOpenTip:String = "Select TMX file(s) to convert";
+						
+			private function getFileTypes():Array{
+				
+				var fileTypes:Array = new Array();
+				fileTypes.push(_fileTypeFilter);
+				
+				return fileTypes;
+				
+			}
+			
+			protected function btnBrowse_clickHandler(event:MouseEvent):void
+			{
+				try{
+					
+					_file.browseForOpenMultiple(_browseForOpenTip, getFileTypes());
+					
+					_file.addEventListener(FileListEvent.SELECT_MULTIPLE, onFileSelect);
+					
+				}catch ( err:Error ){
+					
+					Alert.show("Failed to open!");
+					
+				}
+				
+				function onFileSelect(event:FileListEvent):void
+				{
+					_file.removeEventListener(FileListEvent.SELECT_MULTIPLE, onFileSelect);
+					
+					selectedTMXs = event.files;
+					
+					location.text = "";
+					
+					for (var i:uint = 0; i < event.files.length; i++) 
+					{
+						location.text += event.files[i].nativePath + ";";
+					}
+					
+					var selectLangWin:SelectLanguageDialog = new SelectLanguageDialog();
+					
+					PopUpManager.addPopUp(selectLangWin, parentDocument as Sprite, true)
+					
+					PopUpManager.centerPopUp(selectLangWin);
+				}
+			}
+		]]>
+	</fx:Script>
+	<s:HGroup width="100%">
+		<mx:TextInput id="location" width="100%"/>
+		<mx:Button id="btnBrowse" label="Browse..." click="btnBrowse_clickHandler(event)"/>		
+	</s:HGroup>
+</s:VGroup>

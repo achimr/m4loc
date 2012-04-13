@@ -1,0 +1,78 @@
+Author: Leo Jiang <ljiang@adobe.com>
+
+If you have any question about this package, please feel free to ask me any
+question thru above email.
+
+This package just can be used in Adobe TMXtoMosesTools project internally, don't
+distribute this package.
+
+* What's chasen?
+----------------
+
+Chasen is a Japanese Word Segmentor, which was developed by 奈良先端科学技術大学
+院大学情報科学研究科自然言語処理学講座(松本研究室), and depends on the
+Darts(Double-ARray Trie System).
+
+You can find more information on http://chasen.naist.jp.
+
+Recently version:
+ - Chasen 2.4.4
+ - Darts 0.3.2
+
+* Chasen and Encoding Support
+
+Originally, Chasen support the encoding EUC-JP and UTF-8 both. But
+unfortunately, we cannot support them simultaneously. We have to convert the
+encoding of dictionary files and configuration file into UTF-8. You can refer
+the URL http://www.crimson-snow.net/hmsvr/centos/memo/chasen_utf8.html and the
+Makefile in dic directory in this package.
+
+Now, the chasen in this package support the UTF-8.
+
+* How to use the Chasen.
+------------------------
+
+# use the chasen to tokenize the Japanese text.
+$ ./chasen -i w input.file > output.file
+
+* How to install the chasen.
+----------------------------
+
+# compile and build the chasen and dic tools.
+$ cd src
+$ make
+$ make install
+
+The installation step will copy the makemat and makeda into the dic directory.
+Then you can change the working directory into dic, which include all source dic
+files and grammar files, and run the make to create the matrix.cha, table.cha
+and dictionary file (default named as chadic.*) used by chasen.
+
+$ ./makemat -i w
+$ ./makeda -i w chadic *.dic
+
+you can create the grammar and dic files just by running make.
+$ make
+
+* Configuration
+Please put the configuration file 'chasenrc' with the same directory as chasen.
+This configuration file should be same encoding as what you want to support,
+i.e. UTF-8 in this package.
+
+And you can customize this file to get the different output, specify the
+location for dic file.
+
+* Motivation
+Why creating this package or not use the original tar package distributed by
+original author?
+
+ - We want that chasen can support UTF-8 in our project, so we have to convert
+ some files and creating some new files.
+
+ - We will run the chasen on MacOSX, we have to generate some source file for
+ this platform. I run the configure script in original package to create the
+ config.h and darts.h for MacOSX.
+
+ - We will call the chasen in our tools, and want to simplify the installation.
+ So I put the all source files into one folder, and create one binary executable
+ file.

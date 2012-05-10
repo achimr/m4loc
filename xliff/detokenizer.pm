@@ -177,3 +177,67 @@ sub detokenize {
 
 1;
 
+__END__
+
+=head1 NAME
+
+detokenizer.pm: Detokenize sentences based on language-specific rules
+
+=head1 USAGE
+
+    perl detokenizer.pm [-l language_id][-u] < in > out
+
+C<-l language_id>: RFC-3066 language tag. The currently supported languages are
+
+=over
+
+=item Czech (cs)
+
+=item English (en)
+
+=item French (fr)
+
+=item Italian (it)
+
+=back
+
+C<-u>: uppercase the first word of the sentence. This is useful for truecase MT systems.
+
+C<in>: sentence separated text file in UTF-8 encoding
+
+C<out>: output file (written in UTF-8 encoding)
+
+=head2 Language Fallback Rules
+
+If C<language_id> is not specified the default is en (English).
+If C<language_id> is a more specific language (e.g. en-US), the tokenizer will fall back to the super language (e.g. en). 
+If the language is not supported or invalid, the script will fall back to using English rules for the tokenization. 
+
+=head1 SYNOPSIS
+
+    use detokenizer;
+
+    print detokenizer::detokenize("en",1,"mister Jones , working fast , fixed the broken leg ."),"\n";
+
+=head1 DESCRIPTION
+
+This modulino can be used as a script or module. 
+It allows to detokenize sentences based on language-specific rules. 
+
+If a word is followed by a space and punctuation, the tokenizer usually removes the space. 
+
+=head1 FUNCTIONS
+
+=head2 detokenize($langid,$uppersent,$text)
+
+This function detokenizes the text in C<$text>, which is expected to be a single sentence. 
+The detokenization is done under language specific rules specified with C<$langid> (RFC-3066 language identifier). The language fallback rules explaine for script use above B<are not> applied for module use.
+If C<$uppersent> is true, the first word will be uppercased as well (useful for the use with truecase models in MT).
+
+=head1 CREDITS
+
+Copyright (c) 2012 Josh Schroeder, Philipp Koehn, Ondrej Bojar, Achim Ruopp
+
+This modulino is based on a detokenizer script written by Josh Schroeder, based on code by Philipp Koehn; further modifications by Ondrej Bojar
+It was converted into a modulino by Achim Ruopp
+

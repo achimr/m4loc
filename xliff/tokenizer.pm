@@ -192,3 +192,113 @@ sub tokenize {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+tokenizer.pm: Tokenize sentences based on language-specific rules
+
+=head1 USAGE
+
+    perl tokenizer.pm [-l language_id][-a] < in > out
+
+C<-l language_id>: RFC-3066 language tag. The currently supported languages are
+
+=over
+
+=item Catalan (ca)
+
+=item Dutch (nl)
+
+=item English (en)
+
+=item French (fr)
+
+=item German (de)
+
+=item Greek (el)
+
+=item Icelandic (is)
+
+=item Italian (it)
+
+=item Polish (pl)
+
+=item Portuguese (pt)
+
+=item Romanian (ro)
+
+=item Russian (ru)
+
+=item Slovak (sk)
+
+=item Slovene (sl)
+
+=item Spanish (es)
+
+=item Swedish (sv)
+
+=back
+
+C<-a>: agressive tokenization
+
+C<in>: sentence separated text file in UTF-8 encoding
+
+C<out>: output file (written in UTF-8 encoding)
+
+=head1 SYNOPSIS
+
+    use tokenizer;
+
+    my $tok = tokenizer->new("en-US",0);
+    print $tok->tokenize("Dr. Jones, working fast, fixed the broken leg."),"\n";
+
+=head1 DESCRIPTION
+
+This modulino can be used as a script or module. It allows to tokenize sentences based on language-specific rules. The language-specific rules are stored in non-breaking prefix files.
+
+If a word is immediately followed by punctuation, the tokenizer usually separates the two with a space. If the word preceeding the period is a nonbreaking prefix, this space is not inserted.
+
+=head2 Nonbreaking Prefixes Files
+
+Nonbreaking prefixes are loosely defined as any word ending in a period that indicates an abbreviation. A basic example is Mr. and Ms. in English.
+
+The tokenizer uses the nonbreaking prefix files included in the nonbreaking_prefixes folder.
+
+To add a file for other languages, follow the naming convention nonbreaking_prefix.?? and use the two-letter language code you intend to use when creating a tokenizer object.
+
+The tokenizer will first look for a file for the language it is processing, and fall back to English if a file for that language is not found. 
+
+A modifier for prefixes, #NUMERIC_ONLY#, can be added separated by a space for special cases where the prefix should be handled ONLY when before numbers.
+For example, "Article No. 24 states this." the No. is a nonbreaking prefix. However, in "No. It is not true." No functions as a word.
+
+See the example prefix files included in the nonbreaking_prefixes folder for more examples.
+
+=head2 Language Fallback Rules
+
+If C<language_id> is not specified the default is en (English).
+If C<language_id> is a more specific language (e.g. en-US), the tokenizer will fall back to the super language (e.g. en). 
+If the language is not supported, the script will fall back to using English rules for the tokenization. 
+If C<language_id> is invalid, the script will fail.
+
+=head1 FUNCTIONS
+
+=head2 new($langid,$agressive)
+
+Creates new tokenizer object with the language specified by C<$langid> (RFC-3066 language identifier expected, same language fallback rules as described above). More agressive tokenization can be specified with the boolean parameter C<$agressive>.
+
+=head2 tokenize($text)
+
+Member function of tokenizer object to tokenize text in C<$text>) parameter, which is expected to be a single sentence. The function returns the tokenized text.
+
+=head1 CREDITS
+
+Copyright (c) 2012 Josh Schroeder, Philipp Koehn, Achim Ruopp, Bas Rozema, HilE<aacute>rio Leal Fontes,  JesE<uacute>s GimE<eacute>nez 
+
+The modulino is based on the tokenizer script in Moses written by Josh Schroeder, based on code by Philipp Koehn.
+It was converted into a modulino by Achim Ruopp
+
+Thanks for the following individuals for supplying nonbreaking prefix files:
+Bas Rozema (Dutch), HilE<aacute>rio Leal Fontes (Portuguese), JesE<uacute>s GimE<eacute>nez (Catalan & Spanish)
+

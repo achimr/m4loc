@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-package reinsert;
+package reinsert_greedy;
 run() unless caller();
 
 #
@@ -180,14 +180,14 @@ sub reinsert_elements {
     }
 
 	#debugging
-    print "\n$res\n\nelements:\n";
-    foreach $i ( 0 .. $#elements ) {
-        print "elem[$i]=[";
-        while ( my ( $key, $value ) = each $elements[$i] ) {
-            print "$key=$value, ";
-        }
-        print "]\n";
-    }
+#    print "\n$res\n\nelements:\n";
+#    foreach $i ( 0 .. $#elements ) {
+#        print "elem[$i]=[";
+#        while ( my ( $key, $value ) = each $elements[$i] ) {
+#            print "$key=$value, ";
+#        }
+#        print "]\n";
+#    }
 #
     return $res;
 }

@@ -1,0 +1,10 @@
+exttay attribute |0-1| 
+aragraphpay . |0-1| 
+aragraphpay 2 |0-1| 
+exttay ithway |0-1| odecay and oldbay |2-4| . |5-5| 
+exttay of ethay |0-2| ootnotefay |3-3| 
+a ootnotefay |2-3| exttay ithway |0-1| and oremay exttay |4-6| 
+. |5-5| exttay |4-4| ithway and |1-2| exttay |0-0| oremay |3-3| 
+. |2-2| entencesay 1 |0-1| 
+entencesay 2 . |0-2| 
+entencesay |0-0| 2 |4-4| 1 . entencesay |1-3| . |5-5| 

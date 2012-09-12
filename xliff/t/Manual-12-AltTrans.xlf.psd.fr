@@ -1,0 +1,6 @@
+exttay exttay |0-1| . |2-2| 
+exttay |0-0| umbernay 1 |1-2| 
+exttay umbernay 2 |0-2| 
+3 |2-2| exttay umbernay |0-1| 
+umbernay ourfay |1-2| exttay |0-0| 
+exttay exttay . |0-2| 

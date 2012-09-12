@@ -1,0 +1,10 @@
+Text attribute
+Paragraph .
+Paragraph 2
+Text with <g id="1"> code </g> and <g id="2"> bold </g> .
+Text of the footnote
+Text with a footnote <x id="1"/> and more text
+Text with <g id="2"><x id="1"/></g> and more text .
+Sentence 1 .
+Sentence 2 .
+Sentence 1 . Sentence 2 .

@@ -1,0 +1,10 @@
+This is <g id="1"> bold </g> text .
+This is <g id="1"> italic </g> text .
+This is <g id="1"> bold </g> and then <g id="2"> italic </g> text .
+This is <g id="1"> bold and italic </g> text .
+This is <g id="1"> bold and italic and then </g><g id="2"> only italic </g> text .
+
+
+Achim Ruopp
+
+

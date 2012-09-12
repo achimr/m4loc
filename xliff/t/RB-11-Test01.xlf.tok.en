@@ -1,0 +1,12 @@
+Paragraph .
+Text to translate .
+Other text to translate .
+Text to translate with PI
+Text to translate for ID1
+Text with <g id="1"> code </g> and <g id="2"> bold </g> .
+Text of the footnote
+Text with a footnote <x id="1"/> and more text
+Text with <g id="2"><x id="1"/></g> and more text .
+Text number four
+<x id="1"/>
+

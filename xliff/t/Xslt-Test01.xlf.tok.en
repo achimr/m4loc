@@ -1,0 +1,6 @@
+Test page for XLIFF
+.styled { font-size : .8em ; color : red ; font-face : sans-serif ; }
+A paragraph with some <g id="3115090"> styles </g> just see how <g id="1800548994"> nested elements </g> are handled .
+Item with a <g id="2934540"> link </g> in it .
+Item with an <g id="-2011890811"> CSS style </g> .
+End of page

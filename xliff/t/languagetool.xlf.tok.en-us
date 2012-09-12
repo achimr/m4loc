@@ -1,0 +1,92 @@
+Belarusian
+Catalan
+Capitalization
+False friends
+Grammar
+Miscellaneous
+Possible Typo
+Check done , <x id="1"/> potential problems found
+& Check Text
+Correction :
+Czech
+Danish
+German
+Use of whitespace before comma and before / after parentheses
+Use of two consecutive dots or commas
+Word repetition ( e.g. ' will will ' )
+Word repetition
+Unpaired braces , brackets , quotation marks and similar symbols
+Checks that a sentence starts with an uppercase letter
+Whitespace repetition ( bad formatting )
+Two consecutive dots
+Two consecutive comma
+English
+Please type or paste text to check in the top area
+Please insert text to check here
+Esperanto
+Context :
+Message :
+Spanish
+False friend
+false friend hint for :
+Hint : " <x id="1"/> " ( <x id="2"/> ) means <x id="3"/> ( <x id="4"/> ) .
+Did you mean <x id="1"/> ?
+French
+Galician
+Cancel
+LanguageTool check is complete .
+LanguageTool Options
+This is a example input to to show you how LanguageTool works . Note , however , that it does not include a spell checka .
+Potential errors :
+&About...
+Load & Rule File
+& Check Text in Clipboard
+& File
+& Help
+& Hide to System Tray
+&Open...
+Option &s...
+& Quit
+Open Main Window
+Your mother tongue :
+No errors or warnings found ( language : <x id="1"/> )
+No errors or warnings found in selected text ( language : <x id="1"/> )
+& OK
+& Change
+Close
+Ignore All
+Ignore
+Options ...
+LanguageTool : Checking Text ...
+Replace text
+&lt; other text &gt;
+Run as server on po & rt
+LanguageTool check of selected text is complete .
+This sentence does not start with an uppercase letter
+Icelandic
+Italian
+Lithuanian
+Put a space after the comma
+Malayalam
+Dutch
+Don ' t put a space after the opening parenthesis
+Don ' t put a space before the closing parenthesis
+Don ' t put a space before the full stop
+Polish
+Possible typo : you repeated a word
+&lt;br&gt;&lt;b&gt; <x id="1"/> . Line <x id="2"/> , column <x id="3"/> &lt;/b&gt;&lt;br&gt;
+Results will appear here
+&lt;br&gt;Time: <x id="1"/> ms ( including <x id="2"/> ms for rule matching ) &lt;br&gt;
+Russian
+Slovak
+Slovenian
+Put a space after the comma , but not before the comma
+Starting check in <x id="1"/>
+Swedish
+Text Language :
+Two consecutive commas
+Two consecutive dots
+Ukrainian
+Unpaired bracket or similar symbol
+Possible typo : you repeated a whitespace
+Romanian

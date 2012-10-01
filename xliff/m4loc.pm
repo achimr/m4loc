@@ -27,6 +27,7 @@ use warnings;
 use strict;
 
 use FindBin qw($Bin);
+use lib "$Bin";
 use Getopt::Std;
 use IPC::Open2;
 use File::Basename;

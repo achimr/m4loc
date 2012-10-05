@@ -38,8 +38,11 @@ sub run {
 
     # Read line from InlineText file
     while (<$ifh>) {
+		#acquire elements(tags)
         my @elements = extract_inline($_);
+
         if ( my $traced_target = <STDIN> ) {
+			#reinsert elements into translated text
             print reinsert_elements( $traced_target, @elements );
             print "\n";
         }
@@ -56,7 +59,9 @@ sub extract_inline {
     my @elements;
     my $i = 0;
 
+	#work with the following tags only
     my $inline_tags = "(m|g|x|bx|ex|lb|mrk)";
+
     while ( $inline =~ /\G(.*?)<(\/?)$inline_tags(\s.*?)?>/g ) {
         my @tokens_before = split ' ', $1;
         my $num_tokens = scalar(@tokens_before);
@@ -105,6 +110,7 @@ sub reinsert_elements {
     my @elements      = @_;
     my @phrase        = ();
     my $i;
+
 
     #create array of phrases with start and en info (taken from moses -v)
     while ( $traced_target =~ /\G(.*?)\s*\|(\d+)-(\d+)\|\s*/g ) {
@@ -167,6 +173,8 @@ sub reinsert_elements {
     #take all not used elements and put them at the end
     foreach $i ( 0 .. $#elements ) {
         if ( !$elements[$i]->{used} ) {
+			#initialize phrase[0] if it is not (no moses output(translatio), only a tag)
+			push(@phrase,["",0,0]) if($#phrase==-1);
             $phrase[$#phrase][0] .= $elements[$i]->{txt};
 
             #mark tag as used
@@ -189,6 +197,12 @@ sub reinsert_elements {
 #        print "]\n";
 #    }
 #
+
+	#remove strating and trailing char if empty
+	$res =~ s/\s+/ /g;
+	$res =~ s/^\s+//g;
+	$res =~ s/s+$//g;
+
     return $res;
 }
 
@@ -255,7 +269,17 @@ option. When invoked with the C<-t> option, the Moses decoder outputs
 phrase alignment information which indicates which source phrases where 
 translated with which target phrases. C<reinsert.pm> uses this information 
 to insert XLIFF inline elements roughly at the correct positions in 
-the target text.
+the target text. It is done in "greedy" way. The greedy idea is similar to Perl (or regular expression)
+greedy search. It means the algorithm is trying to accomodate as many tokens into pair tag as possible.
+E.g.
+Input 1: one <g id="1"> two three </g>
+Input 2: drei |2-2| eins |0-0| zwei |1-1|
+
+Output : <g id="1">eins zwei drei</g>
+Idea: "two" and "three" are tokens accomodated in g tag. "zwei" "drei" are translations of those tokens.
+Therefore "zwei" and "drei" need to be included in g tag as well. Since between "zwei" and "drei" 
+appeared "eins" it will be included in g tag as well(greediness). Not including "eins" token into
+g tag it would be needed to create additional g tag and this is not possible.
 
 The output C<target_tokenized_InlineText_file> is a tokenized version of the
 target text with XLIFF inline elements inserted. Detokenization still needs

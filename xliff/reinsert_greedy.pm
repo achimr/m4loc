@@ -62,7 +62,7 @@ sub extract_inline {
 	#work with the following tags only
     my $inline_tags = "(m|g|x|bx|ex|lb|mrk)";
 
-    while ( $inline =~ /\G(.*?)<(\/?)$inline_tags(\s.*?)?>/g ) {
+    while ( $inline =~ /\G(.*?)<(\/?)$inline_tags(\s|\/?.*?)?>/g ) {
         my @tokens_before = split ' ', $1;
         my $num_tokens = scalar(@tokens_before);
         $i += $num_tokens;

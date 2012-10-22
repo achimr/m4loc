@@ -46,7 +46,7 @@ sub remove {
     my $all = shift;
     my $tok_source = shift;
 
-    my $regex = $all?qr/<.*?>/:qr/<\/?(g|x|bx|ex|lb|mrk)(\s.*?)?>/;
+    my $regex = $all?qr/<.*?>/:qr/<\/?(g|x|bx|ex|lb|mrk)(\s|\/.*?)?>/;
 
     $tok_source =~ s/$regex//g;
     $tok_source =~ s/\s\s+/ /g;

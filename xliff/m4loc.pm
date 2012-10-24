@@ -27,6 +27,15 @@ use warnings;
 use strict;
 
 use FindBin qw($Bin);
+# Untaint $Bin for use in REST API
+BEGIN {
+    if($Bin =~ /([\w\.:\/]+)/) {
+	$Bin = $1;
+    }
+    else {
+	die "Bad directory $Bin";
+    }
+}
 use lib "$Bin";
 use Getopt::Std;
 use IPC::Open2;

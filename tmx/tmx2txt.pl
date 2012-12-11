@@ -46,12 +46,12 @@ open(SRCOUT,">:utf8",$outBase.".".$srcLang) || die "Cannot open source output fi
 open(TGTOUT,">:utf8",$outBase.".".$tgtLang) || die "Cannot open target output file: $outBase.$tgtLang";
 
 # Cannot use the for_tu interface here - process will run out of memory on larger files
-$reader->for_tu2(sub{
+$reader->for_tu(sub{
     my $tu = shift;
     if(exists($$tu{$srcLang}) && exists($$tu{$tgtLang})) {
 	# Necessary as some tu's can contain newlines
-	my $srcText = $$tu{$srcLang};
-	my $tgtText = $$tu{$tgtLang};
+	my $srcText = $$tu{$srcLang}{'-seg'};
+	my $tgtText = $$tu{$tgtLang}{'-seg'};
 	# Workaround for bug in XML::TMX::Reader
 	$srcText =~ s/ARRAY\(.*?\)/$replace/g;
 	$srcText =~ s/<ut>.*?<\/ut>/$replace/g;

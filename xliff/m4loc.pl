@@ -203,7 +203,7 @@ close(TMPIN);
 close(TMPOUT);
 
 #pick up results and put it back into original file
-$command = "$tikal -lm  $input -from $tmpout ";
+$command = "$tikal -lm  $input -from $tmpout -sl $sl -tl $tl ";
 print "$command\n";
 system($command);
 

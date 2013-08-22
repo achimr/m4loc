@@ -60,7 +60,7 @@ sub run {
     my $tok_param_str = "-l en";
 
     #program for tokenization. Default: Moses' tokenizer.perl
-    my $tok_program = "$Bin/./tokenizer.pm";
+    my $tok_program = "/opt/moses/scripts/tokenizer/tokenizer.perl";
 
     #print out help info if some incorrect options has been inserted
     my $HELP = 0;

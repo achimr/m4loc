@@ -8,7 +8,7 @@ __PACKAGE__->run(@ARGV) unless caller();
 # Script wrap_detokenizer.pm detokenizes data from Markup Reinserter; after
 # this step, tikal -lm takes place. wrap_detokenizer is a part of M4Loc effort
 # http://code.google.com/p/m4loc/. If default (Moses) detokenizer is used,
-# detokenizer.perl (or detokenizer.pm) and nonbreaking_prefixes direcory are 
+# detokenizer.perl and nonbreaking_prefixes direcory are 
 # required by this script.
 #
 #
@@ -49,8 +49,8 @@ sub run {
     my $detok_param_str = "-l en";
     my @detok_param;
 
-    #program for detokenization. Default: detokenizer.pm
-    my $detok_program = "perl $Bin/./detokenizer.pm";
+    #program for detokenization. Default: detokenizer.perl
+    my $detok_program = "perl /opt/moses/scripts/tokenizer/detokenizer.perl";
 
     #print out help info if some incorrect options has been inserted
     my $HELP = 0;
@@ -72,7 +72,7 @@ sub run {
     if ( ( !$opt_status ) || ($HELP) ) {
         print "\n$0 converts tokenized InlineText into InlineText.\n";
         print "\nUSAGE: perl $0 [-t -p] < inFile > outFile\n";
-        print "\t -t detokenizer - program; (default: -t \"detokenizer.pm\")\n";
+        print "\t -t detokenizer - program; (default: -t \"detokenizer.perl\")\n";
         print "\t -p detokenizer' options (default -p \"-l en\")\n";
         print "\tinFile - tokenized InlineText file, output of reinsert.pm\n";
         print "\toutFile - InlineText file, input for Tikal (-lm option)\n";

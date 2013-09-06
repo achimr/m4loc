@@ -50,7 +50,7 @@ sub run {
     my @detok_param;
 
     #program for detokenization. Default: detokenizer.perl
-    my $detok_program = "perl /opt/moses/scripts/tokenizer/detokenizer.perl";
+    my $detok_program = "detokenizer.perl";
 
     #print out help info if some incorrect options has been inserted
     my $HELP = 0;
@@ -234,7 +234,7 @@ is ready to be processed by tikal -lm process (Okapi framework). Workflow:
 L<http://bit.ly/gOms1Y>
 
 -t specify an path to and external detokenizer itself (default -t
-"perl detokenizer.pm" )
+"detokenizer.perl" )
 
 -p options for the selected tokenizer (default -p "-l en" - which means English 
 language

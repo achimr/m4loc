@@ -39,7 +39,6 @@ BEGIN {
 use lib "$Bin";
 use Getopt::Std;
 use IPC::Open2;
-use File::Basename;
 use File::Spec qw(rel2abs);
 use wrap_tokenizer;
 use wrap_detokenizer;
@@ -59,10 +58,10 @@ sub run {
     binmode(STDOUT,":utf8");
 
     my %opts;
-    getopts("s:l:k:d:m:r:",\%opts);
+    getopts("gs:l:k:d:m:r:",\%opts);
 
     if(@ARGV != 0) {
-	die "Usage: perl $0 [-s source_language][-t target_language][-m moses_ini_file][-r recaser_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
+	die "Usage: perl $0 [-g][-s source_language][-t target_language][-m moses_ini_file][-r recaser_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
     }
 
     # Source language
@@ -75,7 +74,7 @@ sub run {
     my $tok_prog;
     my @tok_param;
     if(!$opts{k}) {
-	$tok_prog = "$Bin/tokenizer.pm";
+	$tok_prog = "tokenizer.perl";
 	@tok_param = ("-l",$sl);
     }
     else {
@@ -88,7 +87,7 @@ sub run {
     my $detok_prog;
     my @detok_param;
     if(!$opts{d}) {
-	$detok_prog = "$Bin/detokenizer.pm";
+	$detok_prog = "detokenizer.perl";
 	@detok_param = ("-l",$tl);
     }
     else {
@@ -106,7 +105,12 @@ sub run {
     my $inlinetextmt = $class->new($sl,$tl,$moses_config,$recaser_config,$tok_prog,\@tok_param,$detok_prog,\@detok_param);
     while(my $source = <STDIN>){
 	chomp $source;
-	print $inlinetextmt->translate($source),"\n";
+	if($opts{g}) {
+	    print $inlinetextmt->translate_tag($source),"\n";
+	}
+	else {
+	    print $inlinetextmt->translate($source),"\n";
+	}
     }
 }
 
@@ -123,14 +127,12 @@ sub new {
     my $detok_param_ref = shift;
     
     # New tokenizer and detokenizer objects
-    # Use __FILE__ to determine library directory
-    my ($myfile,$mydir) = fileparse(File::Spec->rel2abs(__FILE__));
     if(!$tok_prog) {
-	$tok_prog = "$mydir/tokenizer.pm";
+	$tok_prog = "tokenizer.perl";
 	$tok_param_ref = ['-l',$sourcelang];
     }
     if(!$detok_prog) {
-	$detok_prog = "$mydir/detokenizer.pm";
+	$detok_prog = "detokenizer.perl";
 	$detok_param_ref = ['-l',$targetlang];
     }
     my $tokenizer = wrap_tokenizer->new($tok_prog, @{$tok_param_ref});
@@ -222,6 +224,50 @@ sub translate {
 
     #detokenization
     my $detok = $self->{Detokenizer}->processLine($reinserted);
+
+    #fix whitespaces around tags
+    my $fix = fix_markup_ws::fix_whitespace($source, $detok);
+
+    return $fix;
+}
+
+sub translate_tag {
+    my $self = shift;
+    if(!ref $self) {
+	return "Unnamed $self";
+    }
+    my $source = shift;
+
+    #tokenization
+    my $tok = $self->{Tokenizer}->processLine($source);
+
+    # Wrap markup in Moses-specific XML
+    my $wrapped_source = wrap_markup::wrap_markup($tok);
+
+    #lowercasing
+    my $lower = lc($wrapped_source);
+
+    #moses
+    my $min = $self->{MosesIn};
+    my $mout = $self->{MosesOut};
+    print $min $lower,"\n";
+    $min->flush();
+    my $moses = scalar <$mout>;
+    chomp $moses;
+
+    # Decode XML entities
+    my $decoded_target = decode_markup::decode_markup($moses);
+
+    #recasing
+    my $rin = $self->{RecaseIn};
+    my $rout = $self->{RecaseOut};
+    print $rin $decoded_target,"\n";
+    $rin->flush ();
+    my $recase_target = scalar <$rout>;
+    chomp $recase_target;
+
+    #detokenization
+    my $detok = $self->{Detokenizer}->processLine($recase_target);
 
     #fix whitespaces around tags
     my $fix = fix_markup_ws::fix_whitespace($source, $detok);

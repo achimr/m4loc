@@ -47,6 +47,7 @@ use recase_preprocess;
 use recase_postprocess;
 use fix_markup_ws;
 use reinsert;
+use reinsert_greedy;
 
 # Class Methods
 sub run {
@@ -58,10 +59,10 @@ sub run {
     binmode(STDOUT,":utf8");
 
     my %opts;
-    getopts("gs:l:k:d:m:c:r",\%opts);
+    getopts("gres:l:k:d:m:c:",\%opts);
 
     if(@ARGV != 0) {
-	die "Usage: perl $0 [-g][-r][-s source_language][-t target_language][-m moses_ini_file][-c case_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
+	die "Usage: perl $0 [-g][-r][-e][-s source_language][-t target_language][-m moses_ini_file][-c case_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
     }
 
     # Source language
@@ -102,7 +103,7 @@ sub run {
     # Casing configuration
     my $caser_config = $opts{c} ? $opts{c} : "$Bin/case.ini";
 
-    my $inlinetextmt = $class->new($sl,$tl,$moses_config,$caser_config,$tok_prog,\@tok_param,$detok_prog,\@detok_param,$opts{g},$opts{r});
+    my $inlinetextmt = $class->new($sl,$tl,$moses_config,$caser_config,$tok_prog,\@tok_param,$detok_prog,\@detok_param,$opts{g},$opts{r},$opts{e});
     while(my $source = <STDIN>){
 	chomp $source;
 	if($opts{g}) {
@@ -127,6 +128,7 @@ sub new {
     my $detok_param_ref = shift;
     my $tag_mode = shift;
     my $recaser_mode = shift;
+    my $reinsert_greedy_mode = shift;
     
     # New tokenizer and detokenizer objects
     if(!$tok_prog) {
@@ -174,7 +176,8 @@ sub new {
 	Tokenizer => $tokenizer, 
 	Detokenizer => $detokenizer,
 	TagMode => $tag_mode,
-	RecaserMode => $recaser_mode
+	RecaserMode => $recaser_mode,
+	ReinsertGreedyMode => $reinsert_greedy_mode
     };
     bless $self,$class;
     return $self;
@@ -249,8 +252,16 @@ sub translate {
     }
 
     #reinsert
-    my @elements = reinsert::extract_inline($tok);
-    my $reinserted  = reinsert::reinsert_elements($target_tok,@elements);
+    my $reinserted;
+    my @elements;
+    if($self->{ReinsertGreedyMode}) {
+	@elements = reinsert_greedy::extract_inline($tok);
+	$reinserted  = reinsert_greedy::reinsert_elements($target_tok,@elements);
+    }
+    else {
+	@elements = reinsert::extract_inline($tok);
+	$reinserted  = reinsert::reinsert_elements($target_tok,@elements);
+    }
 
     #detokenization
     my $detok = $self->{Detokenizer}->processLine($reinserted);

@@ -58,10 +58,10 @@ sub run {
     binmode(STDOUT,":utf8");
 
     my %opts;
-    getopts("gs:l:k:d:m:r:",\%opts);
+    getopts("gs:l:k:d:m:c:r",\%opts);
 
     if(@ARGV != 0) {
-	die "Usage: perl $0 [-g][-s source_language][-t target_language][-m moses_ini_file][-r recaser_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
+	die "Usage: perl $0 [-g][-r][-s source_language][-t target_language][-m moses_ini_file][-c case_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
     }
 
     # Source language
@@ -99,10 +99,10 @@ sub run {
     # Moses configuration 
     my $moses_config = $opts{m} ? $opts{m} : "$Bin/moses.ini";
 
-    # Recaser configuration file
-    my $recaser_config = $opts{r} ? $opts{r} : "$Bin/recaser.ini";
+    # Casing configuration
+    my $caser_config = $opts{c} ? $opts{c} : "$Bin/case.ini";
 
-    my $inlinetextmt = $class->new($sl,$tl,$moses_config,$recaser_config,$tok_prog,\@tok_param,$detok_prog,\@detok_param);
+    my $inlinetextmt = $class->new($sl,$tl,$moses_config,$caser_config,$tok_prog,\@tok_param,$detok_prog,\@detok_param,$opts{g},$opts{r});
     while(my $source = <STDIN>){
 	chomp $source;
 	if($opts{g}) {
@@ -120,11 +120,13 @@ sub new {
     my $sourcelang = shift;
     my $targetlang = shift;
     my $moses_config = shift;
-    my $recaser_config = shift;
+    my $caser_config = shift;
     my $tok_prog = shift;
     my $tok_param_ref = shift;
     my $detok_prog = shift;
     my $detok_param_ref = shift;
+    my $tag_mode = shift;
+    my $recaser_mode = shift;
     
     # New tokenizer and detokenizer objects
     if(!$tok_prog) {
@@ -138,25 +140,41 @@ sub new {
     my $tokenizer = wrap_tokenizer->new($tok_prog, @{$tok_param_ref});
     my $detokenizer = wrap_detokenizer->new($detok_prog, @{$detok_param_ref});
 
-    # spawn moses and recaser
+    # spawn moses and caseing program
     my ($MOSES_IN, $MOSES_OUT);
-    my $pid = open2 ($MOSES_OUT, $MOSES_IN, 'moses', '-f', $moses_config, '-t');
+    my $pid;
+    if($tag_mode) {
+	$pid = open2 ($MOSES_OUT, $MOSES_IN, 'moses', '-f', $moses_config, '-xml-input','exclusive');
+    }
+    else { 
+	$pid = open2 ($MOSES_OUT, $MOSES_IN, 'moses', '-f', $moses_config, '-t');
+    }
     binmode($MOSES_IN,":utf8");
     binmode($MOSES_OUT,":utf8");
-    my ($RECASE_IN, $RECASE_OUT);
-    my $pid6 = open2 ($RECASE_OUT, $RECASE_IN, 'moses','-v',0,'-f',$recaser_config,'-dl',0);
-    binmode($RECASE_IN,":utf8");
-    binmode($RECASE_OUT,":utf8");
+    my ($CASE_IN, $CASE_OUT);
+    my $pid6;
+    if($recaser_mode) {
+	$pid6 = open2 ($CASE_OUT, $CASE_IN, 'moses','-v',0,'-f',$caser_config,'-dl',0);
+    }
+    else {
+	# truecase.perl in Moses v1.0 does not support -b|unbuffered option yet
+	# $pid6 = open2 ($CASE_OUT, $CASE_IN, 'truecase.perl','--b','--model',$caser_config);
+	$pid6 = open2 ($CASE_OUT, $CASE_IN, 'truecase.perl','--model',$caser_config);
+    }
+    binmode($CASE_IN,":utf8");
+    binmode($CASE_OUT,":utf8");
 
     my $self = { 
 	MosesIn => $MOSES_IN, 
 	MosesOut => $MOSES_OUT, 
 	MosesPid => $pid,
-	RecaseIn => $RECASE_IN, 
-	RecaseOut => $RECASE_OUT, 
-	RecasePid => $pid6,
+	CaseIn => $CASE_IN, 
+	CaseOut => $CASE_OUT, 
+	CasePid => $pid6,
 	Tokenizer => $tokenizer, 
-	Detokenizer => $detokenizer 
+	Detokenizer => $detokenizer,
+	TagMode => $tag_mode,
+	RecaserMode => $recaser_mode
     };
     bless $self,$class;
     return $self;
@@ -172,12 +190,12 @@ sub DESTROY {
     if($childstatus) {
 	warn "Error in closing child Moses process: $childstatus\n";
     }
-    close $self->{RecaseIn};
-    close $self->{RecaseOut};
-    $exitpid = waitpid($self->{RecasePid},0);
+    close $self->{CaseIn};
+    close $self->{CaseOut};
+    $exitpid = waitpid($self->{CasePid},0);
     $childstatus = $? >> 8;
     if($childstatus) {
-	warn "Error in closing child recaser process: $childstatus\n";
+	warn "Error in closing child caser process: $childstatus\n";
     }
 }
 
@@ -205,18 +223,30 @@ sub translate {
     chomp $moses;
 
     #recasing pre-processing
-    my $target_notrace = recase_preprocess::remove_trace($moses);
+    my $target;
+    if($self->{RecaserMode}) {
+	$target = recase_preprocess::remove_trace($moses);
+    }
+    else {
+	$target = $moses;
+    }
 
-    #recasing
-    my $rin = $self->{RecaseIn};
-    my $rout = $self->{RecaseOut};
-    print $rin $target_notrace,"\n";
-    $rin->flush ();
-    my $recase_target = scalar <$rout>;
-    chomp $recase_target;
+    # Casing
+    my $cin = $self->{CaseIn};
+    my $cout = $self->{CaseOut};
+    print $cin $target,"\n";
+    $cin->flush ();
+    my $case_target = scalar <$cout>;
+    chomp $case_target;
 
     #recasing post-processing
-    my $target_tok = recase_postprocess::retrace($moses, $recase_target);
+    my $target_tok;
+    if($self->{RecaserMode}) {
+	$target_tok = recase_postprocess::retrace($moses, $case_target);
+    }
+    else {
+	$target_tok = $case_target;
+    }
 
     #reinsert
     my @elements = reinsert::extract_inline($tok);
@@ -258,16 +288,16 @@ sub translate_tag {
     # Decode XML entities
     my $decoded_target = decode_markup::decode_markup($moses);
 
-    #recasing
-    my $rin = $self->{RecaseIn};
-    my $rout = $self->{RecaseOut};
-    print $rin $decoded_target,"\n";
-    $rin->flush ();
-    my $recase_target = scalar <$rout>;
-    chomp $recase_target;
+    # Casing
+    my $cin = $self->{CaseIn};
+    my $cout = $self->{CaseOut};
+    print $cin $decoded_target,"\n";
+    $cin->flush ();
+    my $case_target = scalar <$cout>;
+    chomp $case_target;
 
     #detokenization
-    my $detok = $self->{Detokenizer}->processLine($recase_target);
+    my $detok = $self->{Detokenizer}->processLine($case_target);
 
     #fix whitespaces around tags
     my $fix = fix_markup_ws::fix_whitespace($source, $detok);

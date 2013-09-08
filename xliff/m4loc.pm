@@ -209,10 +209,11 @@ sub translate {
 	return "Unnamed $self";
     }
     my $source = shift;
+    my $contains_markup = ($source =~ /<.*>/);
 
     #tokenization
     my $tok = $self->{Tokenizer}->processLine($source);
-    my $rem = remove_markup::remove("",$tok);
+    my $rem = $contains_markup ? remove_markup::remove("",$tok) : $tok;
 
     #lowercasing
     my $lower = lc($rem);
@@ -227,12 +228,7 @@ sub translate {
 
     #recasing pre-processing
     my $target;
-    if($self->{RecaserMode}) {
-	$target = recase_preprocess::remove_trace($moses);
-    }
-    else {
-	$target = $moses;
-    }
+    $target = recase_preprocess::remove_trace($moses);
 
     # Casing
     my $cin = $self->{CaseIn};
@@ -244,7 +240,7 @@ sub translate {
 
     #recasing post-processing
     my $target_tok;
-    if($self->{RecaserMode}) {
+    if($contains_markup) {
 	$target_tok = recase_postprocess::retrace($moses, $case_target);
     }
     else {
@@ -254,20 +250,25 @@ sub translate {
     #reinsert
     my $reinserted;
     my @elements;
-    if($self->{ReinsertGreedyMode}) {
-	@elements = reinsert_greedy::extract_inline($tok);
-	$reinserted  = reinsert_greedy::reinsert_elements($target_tok,@elements);
+    if($contains_markup) {
+	if($self->{ReinsertGreedyMode}) {
+	    @elements = reinsert_greedy::extract_inline($tok);
+	    $reinserted  = reinsert_greedy::reinsert_elements($target_tok,@elements);
+	}
+	else {
+	    @elements = reinsert::extract_inline($tok);
+	    $reinserted  = reinsert::reinsert_elements($target_tok,@elements);
+	}
     }
     else {
-	@elements = reinsert::extract_inline($tok);
-	$reinserted  = reinsert::reinsert_elements($target_tok,@elements);
+	$reinserted = $target_tok;
     }
 
     #detokenization
     my $detok = $self->{Detokenizer}->processLine($reinserted);
 
     #fix whitespaces around tags
-    my $fix = fix_markup_ws::fix_whitespace($source, $detok);
+    my $fix = $contains_markup ? fix_markup_ws::fix_whitespace($source, $detok) : $detok;
 
     return $fix;
 }
@@ -278,12 +279,13 @@ sub translate_tag {
 	return "Unnamed $self";
     }
     my $source = shift;
+    my $contains_markup = ($source =~ /<.*>/);
 
     #tokenization
     my $tok = $self->{Tokenizer}->processLine($source);
 
     # Wrap markup in Moses-specific XML
-    my $wrapped_source = wrap_markup::wrap_markup($tok);
+    my $wrapped_source = $contains_markup ? wrap_markup::wrap_markup($tok) : $tok;
 
     #lowercasing
     my $lower = lc($wrapped_source);
@@ -297,7 +299,7 @@ sub translate_tag {
     chomp $moses;
 
     # Decode XML entities
-    my $decoded_target = decode_markup::decode_markup($moses);
+    my $decoded_target = $contains_markup ? decode_markup::decode_markup($moses) : $moses;
 
     # Casing
     my $cin = $self->{CaseIn};
@@ -311,7 +313,7 @@ sub translate_tag {
     my $detok = $self->{Detokenizer}->processLine($case_target);
 
     #fix whitespaces around tags
-    my $fix = fix_markup_ws::fix_whitespace($source, $detok);
+    my $fix = $contains_markup ? fix_markup_ws::fix_whitespace($source, $detok) : $detok;
 
     return $fix;
 }

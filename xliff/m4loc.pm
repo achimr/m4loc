@@ -142,7 +142,7 @@ sub new {
     my $tokenizer = wrap_tokenizer->new($tok_prog, @{$tok_param_ref});
     my $detokenizer = wrap_detokenizer->new($detok_prog, @{$detok_param_ref});
 
-    # spawn moses and caseing program
+    # spawn moses and caseing programs
     my ($MOSES_IN, $MOSES_OUT);
     my $pid;
     if($tag_mode) {
@@ -154,17 +154,23 @@ sub new {
     binmode($MOSES_IN,":utf8");
     binmode($MOSES_OUT,":utf8");
     my ($CASE_IN, $CASE_OUT);
+    my ($TRUECASE_IN, $TRUECASE_OUT);
     my $pid6;
+    my $pidtruecase;
+    # TBD: Maybe also a third option: no recasing at all, e.g. for East Asian languages
     if($recaser_mode) {
 	$pid6 = open2 ($CASE_OUT, $CASE_IN, 'moses','-v',0,'-f',$caser_config,'-dl',0);
     }
-    else {
+    elsif(!$recaser_mode && $caser_config) {
 	# truecase.perl in Moses v1.0 does not support -b|unbuffered option yet
 	# $pid6 = open2 ($CASE_OUT, $CASE_IN, 'truecase.perl','--b','--model',$caser_config);
-	$pid6 = open2 ($CASE_OUT, $CASE_IN, 'truecase.perl','--model',$caser_config);
+	$pidtruecase = open2 ($TRUECASE_OUT, $TRUECASE_IN, 'truecase.perl','--model',$caser_config);
+	$pid6 = open2 ($CASE_OUT, $CASE_IN, 'detruecase.perl');
     }
     binmode($CASE_IN,":utf8");
     binmode($CASE_OUT,":utf8");
+    binmode($TRUECASE_IN,":utf8");
+    binmode($TRUECASE_OUT,":utf8");
 
     my $self = { 
 	MosesIn => $MOSES_IN, 
@@ -173,6 +179,9 @@ sub new {
 	CaseIn => $CASE_IN, 
 	CaseOut => $CASE_OUT, 
 	CasePid => $pid6,
+	TrueCaseIn => $TRUECASE_IN, 
+	TrueCaseOut => $TRUECASE_OUT, 
+	TrueCasePid => $pidtruecase,
 	Tokenizer => $tokenizer, 
 	Detokenizer => $detokenizer,
 	TagMode => $tag_mode,
@@ -200,6 +209,13 @@ sub DESTROY {
     if($childstatus) {
 	warn "Error in closing child caser process: $childstatus\n";
     }
+    close $self->{TrueCaseIn};
+    close $self->{TrueCaseOut};
+    $exitpid = waitpid($self->{TrueCasePid},0);
+    $childstatus = $? >> 8;
+    if($childstatus) {
+	warn "Error in closing child caser process: $childstatus\n";
+    }
 }
 
 # Object Methods
@@ -216,12 +232,23 @@ sub translate {
     my $rem = $contains_markup ? remove_markup::remove("",$tok) : $tok;
 
     #lowercasing
-    my $lower = lc($rem);
+    my $decoderinput;
+    if($self->{RecaseMode} && $self->{TrueCasePid}) {
+	my $tin = $self->{TrueCaseIn};
+	my $tout = $self->{TrueCaseOut};
+	print $tin $rem,"\n";
+	$tin->flush ();
+	$decoderinput = scalar <$tout>;
+	chomp $decoderinput;
+    }
+    else {
+	$decoderinput = lc($rem);
+    }
 
     #moses
     my $min = $self->{MosesIn};
     my $mout = $self->{MosesOut};
-    print $min $lower,"\n";
+    print $min $decoderinput,"\n";
     $min->flush();
     my $moses = scalar <$mout>;
     chomp $moses;

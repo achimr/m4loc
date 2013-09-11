@@ -59,7 +59,7 @@ sub run {
     binmode(STDOUT,":utf8");
 
     my %opts;
-    getopts("gres:l:k:d:m:c:",\%opts);
+    getopts("gres:t:k:d:m:c:",\%opts);
 
     if(@ARGV != 0) {
 	die "Usage: perl $0 [-g][-r][-e][-s source_language][-t target_language][-m moses_ini_file][-c case_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
@@ -233,7 +233,7 @@ sub translate {
 
     #lowercasing
     my $decoderinput;
-    if($self->{RecaseMode} && $self->{TrueCasePid}) {
+    if($self->{TrueCasePid}) {
 	my $tin = $self->{TrueCaseIn};
 	my $tout = $self->{TrueCaseOut};
 	print $tin $rem,"\n";

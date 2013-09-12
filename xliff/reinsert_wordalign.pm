@@ -225,10 +225,10 @@ sub recalculate_pos {
     		my $te = $se <= $#wordalign ? $wordalign[$se]->{end} : $#phrase;
  
     		for my $i ( $ss .. $se ){
-    			if ( $wordalign[$i]->{start} < $ts ){
+    			if ( exists $wordalign[$i]->{start} && $wordalign[$i]->{start} < $ts ){
     				$ts = $i <= $#wordalign ? $wordalign[$i]->{start} : $#phrase;
     			}
-    			if ( $wordalign[$i]->{end} > $te ){
+    			if ( exists $wordalign[$i]->{end} && $wordalign[$i]->{end} > $te ){
     				$te = $i <= $#wordalign ? $wordalign[$i]->{end} : $#phrase;
     			}
     		}

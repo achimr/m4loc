@@ -59,10 +59,10 @@ sub run {
     binmode(STDOUT,":utf8");
 
     my %opts;
-    getopts("gres:t:k:d:m:c:",\%opts);
+    getopts("gr:es:t:k:d:m:c:",\%opts);
 
     if(@ARGV != 0) {
-	die "Usage: perl $0 [-g][-r][-e][-s source_language][-t target_language][-m moses_ini_file][-c case_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
+	die "Usage: perl $0 [-g][-r recase_ini_file][-e][-s source_language][-t target_language][-m moses_ini_file][-c truecase_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
     }
 
     # Source language
@@ -101,9 +101,11 @@ sub run {
     my $moses_config = $opts{m} ? $opts{m} : "$Bin/moses.ini";
 
     # Casing configuration
-    my $caser_config = $opts{c} ? $opts{c} : "$Bin/case.ini";
+    if($opts{c} && $opts{r}) {
+	die "Cannot have both a truecaser (-c) and a recaser (-r).\n";
+    }
 
-    my $inlinetextmt = $class->new($sl,$tl,$moses_config,$caser_config,$tok_prog,\@tok_param,$detok_prog,\@detok_param,$opts{g},$opts{r},$opts{e});
+    my $inlinetextmt = $class->new($sl,$tl,$moses_config,$opts{c},$tok_prog,\@tok_param,$detok_prog,\@detok_param,$opts{g},$opts{r},$opts{e});
     while(my $source = <STDIN>){
 	chomp $source;
 	if($opts{g}) {
@@ -121,13 +123,13 @@ sub new {
     my $sourcelang = shift;
     my $targetlang = shift;
     my $moses_config = shift;
-    my $caser_config = shift;
+    my $true_caser_config = shift;
     my $tok_prog = shift;
     my $tok_param_ref = shift;
     my $detok_prog = shift;
     my $detok_param_ref = shift;
     my $tag_mode = shift;
-    my $recaser_mode = shift;
+    my $recaser_config = shift;
     my $reinsert_greedy_mode = shift;
     
     # New tokenizer and detokenizer objects
@@ -142,7 +144,7 @@ sub new {
     my $tokenizer = wrap_tokenizer->new($tok_prog, @{$tok_param_ref});
     my $detokenizer = wrap_detokenizer->new($detok_prog, @{$detok_param_ref});
 
-    # spawn moses and caseing programs
+    # spawn moses and caseing program
     my ($MOSES_IN, $MOSES_OUT);
     my $pid;
     if($tag_mode) {
@@ -157,15 +159,14 @@ sub new {
     my ($TRUECASE_IN, $TRUECASE_OUT);
     my $pid6;
     my $pidtruecase;
-    # TBD: Maybe also a third option: no recasing at all, e.g. for East Asian languages
-    if($recaser_mode) {
-	$pid6 = open2 ($CASE_OUT, $CASE_IN, 'moses','-v',0,'-f',$caser_config,'-dl',0);
-    }
-    elsif(!$recaser_mode && $caser_config) {
+    if($true_caser_config) {
 	# truecase.perl in Moses v1.0 does not support -b|unbuffered option yet
-	# $pid6 = open2 ($CASE_OUT, $CASE_IN, 'truecase.perl','--b','--model',$caser_config);
-	$pidtruecase = open2 ($TRUECASE_OUT, $TRUECASE_IN, 'truecase.perl','--model',$caser_config);
+	# $pid6 = open2 ($CASE_OUT, $CASE_IN, 'truecase.perl','--b','--model',$true_caser_config);
+	$pidtruecase = open2 ($TRUECASE_OUT, $TRUECASE_IN, 'truecase.perl','--model',$true_caser_config);
 	$pid6 = open2 ($CASE_OUT, $CASE_IN, 'detruecase.perl');
+    }
+    elsif($recaser_config) {
+	$pid6 = open2 ($CASE_OUT, $CASE_IN, 'moses','-v',0,'-f',$recaser_config,'-dl',0);
     }
     binmode($CASE_IN,":utf8");
     binmode($CASE_OUT,":utf8");
@@ -185,7 +186,6 @@ sub new {
 	Tokenizer => $tokenizer, 
 	Detokenizer => $detokenizer,
 	TagMode => $tag_mode,
-	RecaserMode => $recaser_mode,
 	ReinsertGreedyMode => $reinsert_greedy_mode
     };
     bless $self,$class;

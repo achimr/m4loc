@@ -7,7 +7,7 @@ __PACKAGE__->run(@ARGV) unless caller();
 #
 # Modulino integrating tag-oriented processing of InlineText
 #
-# Copyright 2012 Moravia Worldwide (xhudik@gmail.com), Digital Silk Road
+# Copyright 2012-2013 Moravia Worldwide (xhudik@gmail.com), Digital Silk Road
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -40,6 +40,7 @@ use lib "$Bin";
 use Getopt::Std;
 use IPC::Open2;
 use File::Spec qw(rel2abs);
+use File::Temp;
 use wrap_tokenizer;
 use wrap_detokenizer;
 use remove_markup;
@@ -48,6 +49,7 @@ use recase_postprocess;
 use fix_markup_ws;
 use reinsert;
 use reinsert_greedy;
+use reinsert_wordalign;
 
 # Class Methods
 sub run {
@@ -59,10 +61,10 @@ sub run {
     binmode(STDOUT,":utf8");
 
     my %opts;
-    getopts("gr:es:t:k:d:m:c:",\%opts);
+    getopts("o:r:es:t:k:d:m:c:",\%opts);
 
     if(@ARGV != 0) {
-	die "Usage: perl $0 [-g][-r recase_ini_file][-e][-s source_language][-t target_language][-m moses_ini_file][-c truecase_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
+	die "Usage: perl $0 [-o p|w|t][-r recase_ini_file][-e][-s source_language][-t target_language][-m moses_ini_file][-c truecase_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
     }
 
     # Source language
@@ -70,6 +72,17 @@ sub run {
 
     # Target language
     my $tl = $opts{t} ? $opts{t} : "en";
+
+    # Tag handling mode determination
+    my $tag_mode = "p";   # default tag handling mode is phrase-based
+    if($opts{o}) {
+	if($opts{o} =~ /[pwt]/) {
+	    $tag_mode = $opts{o};
+	}
+	else {
+	    die "Tag handling mode needs to be: phrase-based(p), word-based(w) or fixed tag(t)\n";
+	}
+    }
 
     # Tokenizer configuration
     my $tok_prog;
@@ -105,11 +118,14 @@ sub run {
 	die "Cannot have both a truecaser (-c) and a recaser (-r).\n";
     }
 
-    my $inlinetextmt = $class->new($sl,$tl,$moses_config,$opts{c},$tok_prog,\@tok_param,$detok_prog,\@detok_param,$opts{g},$opts{r},$opts{e});
+    my $inlinetextmt = $class->new($sl,$tl,$moses_config,$opts{c},$tok_prog,\@tok_param,$detok_prog,\@detok_param,$opts{r},$opts{e},$tag_mode);
     while(my $source = <STDIN>){
 	chomp $source;
-	if($opts{g}) {
+	if($tag_mode eq "t") {
 	    print $inlinetextmt->translate_tag($source),"\n";
+	}
+	elsif($tag_mode eq "w") {
+	    print $inlinetextmt->translate_wordalign($source),"\n";
 	}
 	else {
 	    print $inlinetextmt->translate($source),"\n";
@@ -128,9 +144,9 @@ sub new {
     my $tok_param_ref = shift;
     my $detok_prog = shift;
     my $detok_param_ref = shift;
-    my $tag_mode = shift;
     my $recaser_config = shift;
     my $reinsert_greedy_mode = shift;
+    my $tag_mode = shift;
     
     # New tokenizer and detokenizer objects
     if(!$tok_prog) {
@@ -147,14 +163,21 @@ sub new {
     # spawn moses and caseing program
     my ($MOSES_IN, $MOSES_OUT);
     my $pid;
-    if($tag_mode) {
+    my ($alignfh,$alignfilename);
+    if($tag_mode eq "t") {
 	$pid = open2 ($MOSES_OUT, $MOSES_IN, 'moses', '-f', $moses_config, '-xml-input','exclusive');
+    }
+    elsif($tag_mode eq "w") {
+	# TBD: Danger on larger files/web API use is that temp file could run out of space
+	($alignfh,$alignfilename) = tempfile();
+	$pid = open2 ($MOSES_OUT, $MOSES_IN, 'moses', '-f', $moses_config,'-print-alignment-info-in-n-best','-alignment-output-file',$alignfilename);
     }
     else { 
 	$pid = open2 ($MOSES_OUT, $MOSES_IN, 'moses', '-f', $moses_config, '-t');
     }
     binmode($MOSES_IN,":utf8");
     binmode($MOSES_OUT,":utf8");
+
     my ($CASE_IN, $CASE_OUT);
     my ($TRUECASE_IN, $TRUECASE_OUT);
     my $pid6;
@@ -186,7 +209,9 @@ sub new {
 	Tokenizer => $tokenizer, 
 	Detokenizer => $detokenizer,
 	TagMode => $tag_mode,
-	ReinsertGreedyMode => $reinsert_greedy_mode
+	ReinsertGreedyMode => $reinsert_greedy_mode,
+	AlignFh => $alignfh,
+	AlignFilename => $alignfilename
     };
     bless $self,$class;
     return $self;
@@ -216,6 +241,9 @@ sub DESTROY {
     if($childstatus) {
 	warn "Error in closing child caser process: $childstatus\n";
     }
+
+    close($self->{AlignFh});
+    unlink($self->{AlignFilename});
 }
 
 # Object Methods
@@ -289,6 +317,72 @@ sub translate {
     }
     else {
 	$reinserted = $target_tok;
+    }
+
+    #detokenization
+    my $detok = $self->{Detokenizer}->processLine($reinserted);
+
+    #fix whitespaces around tags
+    my $fix = $contains_markup ? fix_markup_ws::fix_whitespace($source, $detok) : $detok;
+
+    return $fix;
+}
+
+sub translate_wordalign {
+    my $self = shift;
+    if(!ref $self) {
+	return "Unnamed $self";
+    }
+    my $source = shift;
+    my $contains_markup = ($source =~ /<.*>/);
+
+    #tokenization
+    my $tok = $self->{Tokenizer}->processLine($source);
+    my $rem = $contains_markup ? remove_markup::remove("",$tok) : $tok;
+
+    #lowercasing
+    my $decoderinput;
+    if($self->{TrueCasePid}) {
+	my $tin = $self->{TrueCaseIn};
+	my $tout = $self->{TrueCaseOut};
+	print $tin $rem,"\n";
+	$tin->flush ();
+	$decoderinput = scalar <$tout>;
+	chomp $decoderinput;
+    }
+    else {
+	$decoderinput = lc($rem);
+    }
+
+    #moses
+    my $min = $self->{MosesIn};
+    my $mout = $self->{MosesOut};
+    print $min $decoderinput,"\n";
+    $min->flush();
+    my $moses = scalar <$mout>;
+    chomp $moses;
+    # Read alignment from alignment file
+    my $alignfh = $self->{AlignFh};
+    my $alignment = <$alignfh>;
+    chomp $alignment;
+
+    # Casing
+    my $cin = $self->{CaseIn};
+    my $cout = $self->{CaseOut};
+    print $cin $moses,"\n";
+    $cin->flush ();
+    my $case_target = scalar <$cout>;
+    chomp $case_target;
+
+    #reinsert
+    my $reinserted;
+    if($contains_markup) {
+	my @elements = reinsert_wordalign::extract_inline($tok);
+	my @alignment = reinsert_wordalign::extract_wordalign($alignment);
+	$reinserted = reinsert_wordalign($case_target,\@elements,\@alignment);
+    }
+    else {
+	$reinserted = $case_target;
     }
 
     #detokenization

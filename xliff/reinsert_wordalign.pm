@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-package reinsert;
+package reinsert_wordalign;
 run() unless caller();
 
 #

@@ -61,10 +61,10 @@ sub run {
     binmode(STDOUT,":utf8");
 
     my %opts;
-    getopts("o:r:es:t:k:d:m:c:",\%opts);
+    getopts("o:r:ens:t:k:d:m:c:",\%opts);
 
     if(@ARGV != 0) {
-	die "Usage: perl $0 [-o p|w|t][-r recase_ini_file][-e][-s source_language][-t target_language][-m moses_ini_file][-c truecase_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
+	die "Usage: perl $0 [-o p|w|t][-r recase_ini_file][-e][-n][-s source_language][-t target_language][-m moses_ini_file][-c truecase_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file\n";
     }
 
     # Source language
@@ -109,6 +109,7 @@ sub run {
 	$detok_prog = shift @detok_command;
 	@detok_param = @detok_command;
     }
+    my $no_detokenization = $opts{n} ? 1 : 0;
 
     # Moses configuration 
     my $moses_config = $opts{m} ? $opts{m} : "$Bin/moses.ini";
@@ -118,7 +119,7 @@ sub run {
 	die "Cannot have both a truecaser (-c) and a recaser (-r).\n";
     }
 
-    my $inlinetextmt = $class->new($sl,$tl,$moses_config,$opts{c},$tok_prog,\@tok_param,$detok_prog,\@detok_param,$opts{r},$opts{e},$tag_mode);
+    my $inlinetextmt = $class->new($sl,$tl,$moses_config,$opts{c},$tok_prog,\@tok_param,$detok_prog,\@detok_param,$opts{r},$opts{e},$tag_mode,$no_detokenization);
     while(my $source = <STDIN>){
 	chomp $source;
 	if($tag_mode eq "t") {
@@ -147,6 +148,7 @@ sub new {
     my $recaser_config = shift;
     my $reinsert_greedy_mode = shift;
     my $tag_mode = shift;
+    my $no_detokenization = shift;
     
     # New tokenizer and detokenizer objects
     if(!$tok_prog) {
@@ -210,6 +212,7 @@ sub new {
 	Detokenizer => $detokenizer,
 	TagMode => $tag_mode,
 	ReinsertGreedyMode => $reinsert_greedy_mode,
+	NoDetokenization => $no_detokenization,
 	AlignFh => $alignfh,
 	AlignFilename => $alignfilename
     };
@@ -320,6 +323,9 @@ sub translate {
     }
 
     #detokenization
+    if($self->{NoDetokenization}) {
+	return $reinserted;
+    }
     my $detok = $self->{Detokenizer}->processLine($reinserted);
 
     #fix whitespaces around tags
@@ -386,6 +392,9 @@ sub translate_wordalign {
     }
 
     #detokenization
+    if($self->{NoDetokenization}) {
+	return $reinserted;
+    }
     my $detok = $self->{Detokenizer}->processLine($reinserted);
 
     #fix whitespaces around tags
@@ -431,6 +440,9 @@ sub translate_tag {
     chomp $case_target;
 
     #detokenization
+    if($self->{NoDetokenization}) {
+	return $case_target;
+    }
     my $detok = $self->{Detokenizer}->processLine($case_target);
 
     #fix whitespaces around tags

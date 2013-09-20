@@ -422,12 +422,23 @@ sub translate_tag {
     my $wrapped_source = $contains_markup ? wrap_markup::wrap_markup($tok) : $tok;
 
     #lowercasing
-    my $lower = lc($wrapped_source);
+    my $decoderinput;
+    if($self->{TrueCasePid}) {
+	my $tin = $self->{TrueCaseIn};
+	my $tout = $self->{TrueCaseOut};
+	print $tin $wrapped_source,"\n";
+	$tin->flush ();
+	$decoderinput = scalar <$tout>;
+	chomp $decoderinput;
+    }
+    else {
+	$decoderinput = lc($wrapped_source);
+    }
 
     #moses
     my $min = $self->{MosesIn};
     my $mout = $self->{MosesOut};
-    print $min $lower,"\n";
+    print $min $decoderinput,"\n";
     $min->flush();
     my $moses = scalar <$mout>;
     chomp $moses;

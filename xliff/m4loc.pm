@@ -40,12 +40,14 @@ use lib "$Bin";
 use Getopt::Std;
 use IPC::Open2;
 use File::Spec qw(rel2abs);
-use File::Temp;
+use File::Temp qw(tempfile);
 use wrap_tokenizer;
 use wrap_detokenizer;
 use remove_markup;
 use recase_preprocess;
 use recase_postprocess;
+use wrap_markup;
+use decode_markup;
 use fix_markup_ws;
 use reinsert;
 use reinsert_greedy;
@@ -245,7 +247,9 @@ sub DESTROY {
 	warn "Error in closing child caser process: $childstatus\n";
     }
 
-    close($self->{AlignFh});
+    if($self->{AlignFh}) {
+	close($self->{AlignFh});
+    }
     unlink($self->{AlignFilename});
 }
 
@@ -385,7 +389,7 @@ sub translate_wordalign {
     if($contains_markup) {
 	my @elements = reinsert_wordalign::extract_inline($tok);
 	my @alignment = reinsert_wordalign::extract_wordalign($alignment);
-	$reinserted = reinsert_wordalign($case_target,\@elements,\@alignment);
+	$reinserted = reinsert_wordalign::reinsert_elements($case_target,\@elements,\@alignment);
     }
     else {
 	$reinserted = $case_target;

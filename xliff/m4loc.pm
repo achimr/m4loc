@@ -249,8 +249,8 @@ sub DESTROY {
 
     if($self->{AlignFh}) {
 	close($self->{AlignFh});
+	unlink($self->{AlignFilename});
     }
-    unlink($self->{AlignFilename});
 }
 
 # Object Methods

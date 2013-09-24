@@ -176,7 +176,7 @@ sub processLine{
         $line =~ s/&#x5b;/\[/g;
         $line =~ s/&#x5d;/\]/g;
         $line =~ s/&#x7c;/\|/g;
-        $line =~ s/&amp;/&/g;
+        # $line =~ s/&amp;/&/g;
 
    my $output = $self->detok($line);
    return $output;

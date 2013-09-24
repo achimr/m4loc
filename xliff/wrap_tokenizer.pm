@@ -201,7 +201,7 @@ xml:space=\"preserve\">" . $line . " </InlineText>";
     $line =~ s/\|/&#x7c;/g;
 
 #this is still open question whether character '&' should be represented as  '&amp;' or '&'
-    $line =~ s/\&amp;/\&/g;
+    # $line =~ s/\&amp;/\&/g;
     return $line;
 }
 

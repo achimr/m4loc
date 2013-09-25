@@ -239,14 +239,15 @@ sub DESTROY {
     if($childstatus) {
 	warn "Error in closing child caser process: $childstatus\n";
     }
+
     if($self->{TrueCasePid}) {
 	close $self->{TrueCaseIn};
 	close $self->{TrueCaseOut};
-    }
-    $exitpid = waitpid($self->{TrueCasePid},0);
-    $childstatus = $? >> 8;
-    if($childstatus) {
-	warn "Error in closing child caser process: $childstatus\n";
+	$exitpid = waitpid($self->{TrueCasePid},0);
+	$childstatus = $? >> 8;
+	if($childstatus) {
+	    warn "Error in closing child caser process: $childstatus\n";
+	}
     }
 
     if($self->{AlignFh}) {

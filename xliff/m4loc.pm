@@ -190,6 +190,8 @@ sub new {
 	# truecase.perl in Moses v1.0 does not support -b|unbuffered option yet
 	# $pid6 = open2 ($CASE_OUT, $CASE_IN, 'truecase.perl','--b','--model',$true_caser_config);
 	$pidtruecase = open2 ($TRUECASE_OUT, $TRUECASE_IN, 'truecase.perl','--model',$true_caser_config);
+	binmode($TRUECASE_IN,":utf8");
+	binmode($TRUECASE_OUT,":utf8");
 	$pid6 = open2 ($CASE_OUT, $CASE_IN, 'detruecase.perl');
     }
     elsif($recaser_config) {
@@ -197,8 +199,6 @@ sub new {
     }
     binmode($CASE_IN,":utf8");
     binmode($CASE_OUT,":utf8");
-    binmode($TRUECASE_IN,":utf8");
-    binmode($TRUECASE_OUT,":utf8");
 
     my $self = { 
 	MosesIn => $MOSES_IN, 
@@ -239,8 +239,10 @@ sub DESTROY {
     if($childstatus) {
 	warn "Error in closing child caser process: $childstatus\n";
     }
-    close $self->{TrueCaseIn};
-    close $self->{TrueCaseOut};
+    if($self->{TrueCasePid}) {
+	close $self->{TrueCaseIn};
+	close $self->{TrueCaseOut};
+    }
     $exitpid = waitpid($self->{TrueCasePid},0);
     $childstatus = $? >> 8;
     if($childstatus) {
@@ -299,6 +301,10 @@ sub translate {
     $cin->flush ();
     my $case_target = scalar <$cout>;
     chomp $case_target;
+    if(!$self->{TrueCasePid}) {
+	my $recased_corrected = ucfirst($case_target);
+	$case_target = $recased_corrected;
+    }
 
     #recasing post-processing
     my $target_tok;
@@ -383,6 +389,10 @@ sub translate_wordalign {
     $cin->flush ();
     my $case_target = scalar <$cout>;
     chomp $case_target;
+    if(!$self->{TrueCasePid}) {
+	my $recased_corrected = ucfirst($case_target);
+	$case_target = $recased_corrected;
+    }
 
     #reinsert
     my $reinserted;
@@ -453,6 +463,10 @@ sub translate_tag {
     $cin->flush ();
     my $case_target = scalar <$cout>;
     chomp $case_target;
+    if(!$self->{TrueCasePid}) {
+	my $recased_corrected = ucfirst($case_target);
+	$case_target = $recased_corrected;
+    }
 
     #detokenization
     if($self->{NoDetokenization}) {

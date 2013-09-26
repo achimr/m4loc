@@ -26,7 +26,7 @@ sub run {
     binmode(STDOUT,":utf8");
 
     if(@ARGV != 0) {
-	die "Usage: perl $0 < tokenized_source > wraped_source\n";
+	die "Usage: perl $0 < tokenized_source > wrapped_source\n";
     }
 
     while(<STDIN>) {
@@ -61,3 +61,30 @@ sub encode_tag {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+wrap_markup.pm: Script to wrap markup present in tokenized source to funnel it unaffected through the Moses decoder
+
+=head1 DESCRIPTION
+
+InlineText markup is a subset of XLIFF inline markup for segments. One method to preserve InlineText markup present in source segments in Moses is to protect it from "I<translation>" by the decoder. This script wraps markup in XML that when used with the Moses option C<< -xml-input exclusive >> protects the markup from translation. It also introduces C<< <wall/> >> tags between the markup and surrounding text to keep tags in the exact order as in the source during decoding. This prevents phrase reordering across walls and can negatively impact translation quality.
+
+=head1 USAGE
+
+    perl wrap_markup.pm < tokenized_source > wrapped_source
+
+=head2 EXPORT
+
+=over
+
+=item wrap_markup(tokenized_source)  
+
+Wraps InlineText markup in XML markup compliant with the Moses XML input feature and inserts C<< <wall/> >> markup between formatting markup and translatable text. Returns wrapped text ready for decoding.
+
+=back
+
+=head1 PREREQUISITES
+
+HTML::Entities

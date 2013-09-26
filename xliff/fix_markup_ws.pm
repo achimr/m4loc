@@ -140,4 +140,26 @@ sub extract_inline {
 }
 
 1;
+__END__
 
+=head1 NAME
+
+fix_markup_ws.pm: Fix whitespace around markup in target according to whitespace in source
+
+=head1 DESCRIPTION
+
+Tokenization and tag preservation/reinsertion introduces whitespace around markup. To achieve the best possible output, this script retrieves information about whitespace around markup in the source segment and tries to project this whitespace to the target translation. This is usually the last step in the markup handling process.
+
+=head1 USAGE
+
+    perl fix_markup_ws.pm source < detokenized_target > fixed_target
+
+=head2 EXPORT
+
+=over
+
+=item fix_whitespace(source,detokenized_target)
+
+Fixes the whitespace around markup in C<< detokenized_target >> based on whitespace around markup in the non-tokenized C<< source >>. Returns the fixed string.
+
+=back

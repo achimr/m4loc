@@ -75,9 +75,7 @@ __END__
 
 recase_postprocess.pm: Reinsert Moses traces into recased Moses output
 
-=head1 USAGE
-
-    perl recase_postprocess.pm lowercased_traced_target < recased_target > recased_traced_target
+=head1 DESCRIPTION
 
 Script to reinsert Moses traces (phrase alignment info) into recased target
 language text. The traces are required to correctly reinsert formatting
@@ -86,6 +84,20 @@ C<lowercased_traced_target> is the output of Moses with the
 C<-t> option. C<recased_target> is the output of a recasing model
 created with Moses (refer to the Moses documentation for further information).
 
+=head1 USAGE
+
+    perl recase_postprocess.pm lowercased_traced_target < recased_target > recased_traced_target
+
 Input is expected to be UTF-8 encoded (without a leading byte-order 
 mark U+FEFF) and output will be UTF-8 encoded as well. 
+
+=head2 EXPORT
+
+=over
+
+=item retrace(traced_target,recased_target)  
+
+Reinsert Moses traces (phrase alignment info) present in C<traced_target> into recased target language text C<recased_target>. Returns string.
+
+=back
 

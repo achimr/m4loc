@@ -152,12 +152,9 @@ __END__
 
 =head1 NAME
 
-reinsert.pm: Reinsert markup from source InlineText into translation
-with Moses
+reinsert.pm: Reinsert markup from source InlineText into translation based on phrase-alignment information
 
-=head1 USAGE
-
-    perl reinsert.pm source_tokenized_InlineText_file < traced_target > target_tokenized_InlineText_file
+=head1 DESCRIPTION
 
 Script to reinsert markup from source InlineText into plain text Moses output
 with traces (traces are phrase alignment information). 
@@ -193,6 +190,23 @@ The script follows these principles when reinserting inline elements:
 
 =back
 
+=head1 USAGE
+
+    perl reinsert.pm source_tokenized_InlineText_file < traced_target > target_tokenized_InlineText_file
+
 Input is expected to be UTF-8 encoded (without a leading byte-order 
 mark U+FEFF) and output will be UTF-8 encoded as well. 
 
+=head2 EXPORT
+
+=over 
+
+=item extract_inline(inline_text)
+
+Extracts tag information in the form of an array from the C<inline_text> parameter in Moses InlineText format. The array is used by the function C<reinsert_elements> for the reinsertion of tags in the target text.
+
+=item reinsert_elements(elements_array,traced_target)
+
+Reinserts tags represented in C<elements_array> into C<traced_target> (output with the Moses C<-t> option) based on the phrase alignment information in the traces. Returns tagged, tokenized target string.
+
+=back

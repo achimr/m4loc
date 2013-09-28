@@ -482,3 +482,83 @@ sub translate_tag {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+m4loc.pm: Translation of Okapi Moses InlineText format
+
+=head1 DESCRIPTION
+
+This modulino translates Moses InlineText extracted from different document formats with the Okapi Framework using a Moses engine specified in the parameters.
+
+=head1 USAGE
+    perl m4loc.pm [-o p|w|t][-r recase_ini_file][-e][-n][-s source_language][-t target_language][-m moses_ini_file][-c truecase_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file
+
+=head2 OPTIONS
+
+=over
+
+=item -o
+
+Tag preservation method: C<p>: based on phrase-alignment information from the decoder; C<w>: based on word-alignment information from the decoder; C<t>: keeps tags in place and translates text around them.
+
+=item -r recase_ini_file
+
+Recase model configuration C<moses.ini> file. Cannot be used simultaneously with the C<-c> option.
+
+=item -e
+
+Use greedy tag reinsertion method in phrase-alignment tag preservation method. Can only be used with C<-o p> option.
+
+=item -n
+
+Do not detokenize output (useful for evaluation purposes).
+
+=item -s source_language
+
+ISO639-1 two letter language code of source language.
+
+=item -t target_language
+
+ISO639-1 two letter language code of target language.
+
+=item -m moses_ini_file
+
+Moses engine configuration C<moses.ini> file.
+
+=item -c truecase_ini_file
+
+Truecase model file for truecasing of source input. Cannot be used simultaneously with the C<-r> option.
+
+=item -k tokenizer_command
+
+Tokenizer command if different from Moses C<tokenizer.perl>.
+
+=item -d detokenizer_command
+
+Detokenizer command if different from Moses C<detokenizer.perl>.
+
+=back
+
+=head2 EXPORT
+
+=over
+
+=item new(source_language,target_language,moses_ini_file,truecase_ini_file,tokenizer_command,tokenizer_parameters,detokenizer_command,detokenizer_parameters,recase_ini_file,greedy_reinsert,tag_preservation_method,no_detokenization)
+
+Object constructor that also initializes all dependent programs like the tokenizer, detokenizer, Moses and casing programs. The parameters correspond to the command line options described above.
+
+=item translate(source_string)
+
+Object method to translate C<source_string> with the phrase-alignment based tag preservation method. Returns translated string.
+
+=item translate_wordalign(source_string)
+
+Object method to translate C<source_string> with the word-alignment based tag preservation method. Returns translated string.
+
+=item translate_tag(source_string)
+
+Object method to translate C<source_string> with the method tag preservation method keeping tags in place. Returns translated string.
+
+=back

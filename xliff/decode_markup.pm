@@ -43,3 +43,34 @@ sub decode_markup {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+decode_markup.pm: Decode markup that was escaped for funneling it through the decoder
+
+=head1 DESCRIPTION
+
+Using the script C<< wrap_markup.pm >> tagging markup gets escaped, wrapped in XML and using the C<< -xml-input exclusive >> Moses option funneled through the decoder. After decoding the tagging markup is still in its escaped form. The C<< decode_markup.pm >> modulino brings the escaped markup back into its previous form.
+
+=head1 USAGE
+
+    perl decode_markup.pm < encoded_target > decoded_target
+
+=head2 EXPORT
+
+=over
+
+=item decode_markup(tokenized_target)  
+
+Unescape markup contained in C<< tokenized_target >>
+
+=back
+
+=head1 KNOWN ISSUES
+
+This could also decode entities that were already encoded before the application of wrap_markup.pm.
+
+=head1 PREREQUISITES
+
+HTML::Entities

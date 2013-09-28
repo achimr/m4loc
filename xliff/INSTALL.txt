@@ -1,57 +1,27 @@
-M4Loc project -  Installation 
-=============================
-
+M4Loc integration tools installation 
+====================================
 
 PREREQUISITES
-================
-Unix/Windows OS (Unix OS is strongly recommended since Windows is not strictly following POSIX standard)
-Perl v 5.10.0
-Perl libraries:
-    FindBin
-    Getopt::Long
+=============
+Unix-based OS
+Perl v 5.10.0 or higher
+CPAN libraries:
     IPC::Run
-    IPC::Cmd
-    Encode
+    IPC::Open2
     XML::LibXML::Reader
-    utf8
-    I18N::LangTags
-    (the libraries can be installed (as a root) via: perl -MCPAN -e 'install IPC::Run'
-
-Okapi Tikal ( code.google.com/p/okapi/downloads/list , documentation: 
-www.opentag.com/okapi/wiki/index.php?title=Tikal )
-
+    HTML::Entities
+Okapi M22 or higher: http://okapi.opentag.com/
+    Okapi executable directory needs to be added to PATH environment variable
+Moses v1.0 or higher: http://www.statmt.org/moses
+    Moses /bin directory and all directories under /scripts need to be added 
+    to PATH environment variable
 
 INSTALLATION
-==============
-There is no need to have a special installation procedure. It is sufficient to
-simply copy all scripts into one directory.
-
-
-SCRIPT EXECUTION
-==================
-Linux/Unix:
-if it is a modullino (pm suffix):
-perl script.pm
-otherwise:
-./script.pl
-
-Windows:
-perl script
-
-There is one central script called m4loc.pl. This script runs all the 
-others which user is not expected to know or modify in any way. 
-The user is required to adjust CAREFULLY all variables only in the m4loc 
-script (external programs names and options). When all the paths and variables 
-are set, the script can be executed:
-
-./m4loc.pl -i my_file.xlf
-or:
-perl m4loc.pl -sl en -tl de -i my_file.xlf
-
-
-perl will start m4loc script with source language: English (en) and target 
-language: German (de). The script continually process input file (-i my_file.xlf). 
-The result (original file + translation) is written out as my_file.out.xlf
-
-For a deeper understanding of scripts and processes read README.txt
+============
+1. Go to http://code.google.com/p/m4loc/
+2. Click on Source tab
+3. Click on Browse
+4. Download ZIP file using link "Download *zip*"
+5. Extract ZIP file
+6. Add m4loc/xliff directory to PATH environment variable
 

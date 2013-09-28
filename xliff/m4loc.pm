@@ -493,6 +493,7 @@ m4loc.pm: Translation of Okapi Moses InlineText format
 This modulino translates Moses InlineText extracted from different document formats with the Okapi Framework using a Moses engine specified in the parameters.
 
 =head1 USAGE
+
     perl m4loc.pm [-o p|w|t][-r recase_ini_file][-e][-n][-s source_language][-t target_language][-m moses_ini_file][-c truecase_ini_file][-k tokenizer_command][-d detokenizer_command] < source_file > target_file
 
 =head2 OPTIONS

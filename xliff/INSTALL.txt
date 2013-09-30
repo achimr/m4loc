@@ -18,10 +18,14 @@ Moses v1.0 or higher: http://www.statmt.org/moses
 
 INSTALLATION
 ============
-1. Go to http://code.google.com/p/m4loc/
+1. In your browser go to http://code.google.com/p/m4loc/
 2. Click on Source tab
 3. Click on Browse
-4. Download ZIP file using link "Download *zip*"
-5. Extract ZIP file
-6. Add m4loc/xliff directory to PATH environment variable
+4. Choose the desired version from the Tag drop-down
+5. Download the ZIP file using the link "Download *zip*"
+   Remark: The direct download link for v0.9.2 is 
+   http://m4loc.googlecode.com/archive/0.9.2.zip
+6. Extract the downloaded ZIP file
+7. Rename the extraction folder from m4loc-<12-digit hex number> to m4loc
+8. Add the m4loc/xliff directory to the PATH environment variable
 

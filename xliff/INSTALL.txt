@@ -6,8 +6,8 @@ PREREQUISITES
 Unix-based OS
 Perl v 5.10.0 or higher
 CPAN libraries:
+    IO::Pty
     IPC::Run
-    IPC::Open2
     XML::LibXML::Reader
     HTML::Entities
 Okapi M22 or higher: http://okapi.opentag.com/

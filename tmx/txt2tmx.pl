@@ -43,7 +43,7 @@ while($srctext = <SRCFILE>) {
     $tgttext = <TGTFILE>;
     chomp $srctext;
     chomp $tgttext;
-    $tmx->add_tu(ID=>$id,$srclang=>$srctext,$tgtlang=>$tgttext);
+    $tmx->add_tu(id=>$id,$srclang=>$srctext,$tgtlang=>$tgttext);
     $id++;
 }
 $tmx->end_tmx();

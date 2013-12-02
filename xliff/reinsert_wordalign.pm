@@ -257,8 +257,9 @@ sub findalign {
             ( $target_start, $target_end ) = findalign( $source_token + 1, @wordalign );
         }
     } else {
-        $target_start = $#wordalign;
-        $target_end   = $#wordalign;
+		# This should force reinsert sub to put elements out of wordalign at the very end
+        $target_start = -1;
+        $target_end   = -1;
     }
     return ( $target_start, $target_end );
 }

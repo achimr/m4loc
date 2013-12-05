@@ -24,7 +24,7 @@ use Data::Dumper;
 
 use reinsert_wordalign;
 
-use Test::Simple tests => 9;
+use Test::Simple tests => 10;
 
 
 test_extract1();
@@ -33,6 +33,7 @@ test_g2();
 test_x1();
 test_x2();
 test_complex();
+test_complex2();
 
 sub test_extract1 {
 	my @wordalign = reinsert_wordalign::extract_wordalign("0-0 1-2");
@@ -79,13 +80,23 @@ sub test_x2 {
 	reinsert_ok($src, $expected, $MT, $align,"two words surrounded by <x> tags");
 }
 
+
 sub test_complex {
-	my $src = 'Click the search icon <g id="1> </g> to expand the drop-down list';
+	my $src = 'Click the search icon <g id="1"> </g> to expand the drop-down list';
+
 	my $MT = 'Click das symbol suchen , erweitern sie die dropdownliste';
 	my $align = '0-0 1-1 2-3 3-2 4-4 5-5 5-6 6-7 7-8 8-8';
-	my $expected = 'Click das symbol <g id="1"> </g> suchen , erweitern sie die dropdownliste';
+	my $expected = 'Click das symbol suchen <g id="1"> </g> , erweitern sie die dropdownliste';
+	reinsert_ok($src, $expected, $MT, $align," The empty <g> tag inside longer sentence with reordering");
+}
 
-	reinsert_ok($src, $expected, $MT, $align,"empty <g> tag inside longer sentence with reordering");
+sub test_complex2 {
+	my $src = 'Tap the <g id="1"> Tablet PC Input Panel </g> icon on the taskbar .';
+	my $MT = 'Klepněte na ikonu Vstupní panel na hlavním panelu .';
+	my $align = '0-0 0-1 1-1 4-3 5-4 6-2 7-5 8-5 9-6 9-7 10-8';
+	my $expected = 'Klepněte na ikonu <g id="1"> Vstupní panel </g> na hlavním panelu .';
+
+	reinsert_ok($src, $expected, $MT, $align," The content inside the <g> tag inside longer sentence with reordering");
 }
  
 # ---- helper funcs

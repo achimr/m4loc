@@ -24,7 +24,7 @@ use Data::Dumper;
 
 use reinsert_wordalign;
 
-use Test::Simple tests => 10;
+use Test::Simple tests => 12;
 
 
 test_extract1();
@@ -34,6 +34,8 @@ test_x1();
 test_x2();
 test_complex();
 test_complex2();
+test_empty_x_reorder();
+test_nested_g_tags();
 
 sub test_extract1 {
 	my @wordalign = reinsert_wordalign::extract_wordalign("0-0 1-2");
@@ -98,6 +100,29 @@ sub test_complex2 {
 
 	reinsert_ok($src, $expected, $MT, $align," The content inside the <g> tag inside longer sentence with reordering");
 }
+
+
+sub test_empty_x_reorder {
+	my $src = 'In <g id="1"> </g> Center , the sync playlist can contain one or more <g id="2"> </g> Player playlists or auto playlists .';
+	my $MT = 'v aplikaci Center může synchronizovaný seznam stop obsahovat jeden nebo více seznamů stop nebo automatických seznamů stop Player .';
+	my $align = '0-0 1-1 1-2 3-5 4-4 5-6 6-3 7-7 8-8 9-9 10-10 12-11 12-12 13-13 14-14 15-15 15-16 11-17 16-18';
+	my $expected = 'v aplikaci <g id="1"> </g> Center může synchronizovaný seznam stop obsahovat jeden nebo více seznamů stop nebo automatických seznamů stop <g id="2"> </g> Player .';
+
+	reinsert_ok($src, $expected, $MT, $align,"first g tag should be empty and precede the 'Center' text");
+}
+
+sub test_nested_g_tags {
+	my $src = '<g id="1"><g id="2"> Planning <x id="3"/> Designing Windows Vista Deployments </g> <g id="4"></g></g>';
+	my $MT = 'plánování a návrh nasazení systému Windows Vista';
+	my $align = '0-0 1-2 2-4 2-5 3-6 4-3';
+	my $expected = '<g id="1"> <g id="2"> plánování a <x id="3"/> návrh nasazení systému Windows Vista </g> <g id="4"> </g> </g>';
+	reinsert_ok($src, $expected, $MT, $align,"nest the g tags properly");
+
+
+
+
+}
+
  
 # ---- helper funcs
 sub reinsert_ok{

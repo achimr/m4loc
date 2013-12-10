@@ -217,12 +217,16 @@ sub recalculate_pos {
 
 			# Initialize with first source token alignment
             my ( $ts, $te ) = findalign( $ss, @wordalign );
-
-			# Iterate through the tokens in the tag pair
-            for my $j ( $ss .. $se ) {
-                my ( $temps, $tempe ) = findalign( $j, @wordalign );
-                if ( $temps < $ts ) { $ts = $temps; }
-                if ( $tempe > $te ) { $te = $tempe; }
+            
+            if ( $elements[ $elements[$i]->{ct} ]->{gap} > 0 ){
+            	# Iterate through the tokens in the tag pair
+            	for my $j ( $ss .. $se ) {
+	                my ( $temps, $tempe ) = findalign( $j, @wordalign );
+                	if ( $temps < $ts ) { $ts = $temps; }
+                	if ( $tempe > $te ) { $te = $tempe; }
+	            }
+            } else {
+            	$te = $ts;
             }
 			
 			# Update 'wordalignment' with lower/higher alignments
@@ -257,7 +261,7 @@ sub findalign {
             ( $target_start, $target_end ) = findalign( $source_token + 1, @wordalign );
         }
     } else {
-		# This should force reinsert sub to put elements out of wordalign at the very end
+        # This should force reinsert sub to put elements out of wordalign at the very end
         $target_start = -1;
         $target_end   = -1;
     }

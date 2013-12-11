@@ -106,9 +106,9 @@ sub test_empty_x_reorder {
 	my $src = 'In <g id="1"> </g> Center , the sync playlist can contain one or more <g id="2"> </g> Player playlists or auto playlists .';
 	my $MT = 'v aplikaci Center může synchronizovaný seznam stop obsahovat jeden nebo více seznamů stop nebo automatických seznamů stop Player .';
 	my $align = '0-0 1-1 1-2 3-5 4-4 5-6 6-3 7-7 8-8 9-9 10-10 12-11 12-12 13-13 14-14 15-15 15-16 11-17 16-18';
-	my $expected = 'v aplikaci <g id="1"> </g> Center může synchronizovaný seznam stop obsahovat jeden nebo více seznamů stop nebo automatických seznamů stop <g id="2"> </g> Player .';
+	my $expected = 'v <g id="1"> </g> aplikaci Center může synchronizovaný seznam stop obsahovat jeden nebo více seznamů stop nebo automatických seznamů stop <g id="2"> </g> Player .';
 
-	reinsert_ok($src, $expected, $MT, $align,"first g tag should be empty and precede the 'Center' text");
+	reinsert_ok($src, $expected, $MT, $align,"first g tag should be empty and precede the 'aplikaci Center' text");
 }
 
 sub test_nested_g_tags {
@@ -117,10 +117,6 @@ sub test_nested_g_tags {
 	my $align = '0-0 1-2 2-4 2-5 3-6 4-3';
 	my $expected = '<g id="1"> <g id="2"> plánování a <x id="3"/> návrh nasazení systému Windows Vista </g> <g id="4"> </g> </g>';
 	reinsert_ok($src, $expected, $MT, $align,"nest the g tags properly");
-
-
-
-
 }
 
  

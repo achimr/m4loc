@@ -41,7 +41,7 @@ fi
 if [ "$extension" = "tmx" -o "$extension" = "xlf" ]; then
 	/opt/okapi/tikal.sh -lm -overtrg -from $input.es $input
 else
-	/opt/okapi/tikal.sh -seg -lm -overtrg -from $dirname/$file.es $input
+	/opt/okapi/tikal.sh -seg -lm -overtrg -from $input.es $input
 fi
 
 read -p "Press [Enter] to continue ..."

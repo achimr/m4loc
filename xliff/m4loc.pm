@@ -465,7 +465,13 @@ sub translate_tag {
     my $case_target = scalar <$cout>;
     chomp $case_target;
     if(!$self->{TrueCasePid}) {
-	my $recased_corrected = ucfirst($case_target);
+	my $remainder = $case_target;
+	my $recased_corrected = "";
+	while($case_target =~ /\G\s*?(<.*?>)*/g) {
+	    $recased_corrected .= $&;
+	    $remainder = $';
+	}
+	$recased_corrected .= ucfirst($remainder);
 	$case_target = $recased_corrected;
     }
 

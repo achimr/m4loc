@@ -230,8 +230,7 @@ C<< perl wrap_detokenizer.pm [-t -p ] < inFile 1> outFile 2>errFile >>
 
 
 where B<inFile> contains  data from Markup Reinserter (M4Loc) and B<outFile> 
-is ready to be processed by tikal -lm process (Okapi framework). Workflow:
-L<http://bit.ly/gOms1Y>
+is ready to be processed by tikal -lm process (Okapi framework).
 
 -t specify an path to and external detokenizer itself (default -t
 "detokenizer.perl" )

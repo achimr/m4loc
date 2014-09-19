@@ -439,8 +439,7 @@ C<< perl wrap_tokenizer.pm [-t -p ] < inFile 1> outFile 2>errFile >>
 
 
 where B<inFile> contains InlineText data (Okapi Framework, tikal -xm) and B<outFile> 
-is tokenized, UTF-8 encoded file ready to processed by Markup remover (M4Loc). Workflow:
-L<http://bit.ly/gOms1Y>.
+is tokenized, UTF-8 encoded file ready to processed by Markup remover (M4Loc).
 
 -t specify an path to and external tokenizer itself (default -t
 "./tokenizer.perl" )
